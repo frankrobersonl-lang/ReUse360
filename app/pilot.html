@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>30-Day Pilot Program — ReUse360</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=Nunito+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0a1628;
+    --deep: #0d1f3c;
+    --card: #0f2545;
+    --card2: #112952;
+    --border: #1e3a5f;
+    --teal: #00c9a7;
+    --teal-dim: #00c9a715;
+    --teal-mid: #00c9a745;
+    --blue: #1a6bff;
+    --blue-dim: #1a6bff18;
+    --amber: #f59e0b;
+    --amber-dim: #f59e0b18;
+    --green: #22c55e;
+    --green-dim: #22c55e18;
+    --red: #ef4444;
+    --slate: #94a3b8;
+    --light: #e2e8f0;
+    --white: #f8fafc;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--navy);
+    color: var(--light);
+    font-family: 'Nunito Sans', sans-serif;
+    font-weight: 300;
+    overflow-x: hidden;
+  }
+
+  /* animated background grid */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background-image:
+      linear-gradient(rgba(0,201,167,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,201,167,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top:0; left:0; right:0; z-index:100;
+    background: rgba(10,22,40,0.96);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 2.5rem; height: 64px;
+  }
+  .nav-logo { font-family:'Syne',sans-serif; font-weight:800; font-size:1.3rem; color:var(--teal); }
+  .nav-links { display:flex; gap:2rem; }
+  .nav-links a { font-size:0.83rem; font-weight:600; color:var(--slate); text-decoration:none; transition:color 0.2s; letter-spacing:0.3px; }
+  .nav-links a:hover, .nav-links a.active { color:var(--teal); }
+  .nav-cta { background:var(--teal); color:var(--navy); padding:0.45rem 1.2rem; border-radius:4px; font-size:0.82rem; font-weight:700; text-decoration:none; transition:opacity 0.2s; }
+  .nav-cta:hover { opacity:0.85; }
+
+  /* HERO */
+  .hero {
+    position: relative; z-index: 1;
+    padding: 7rem 2.5rem 4rem;
+    max-width: 1200px; margin: 0 auto;
+  }
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 0.6rem;
+    font-family: 'DM Mono', monospace; font-size: 0.72rem;
+    color: var(--teal); letter-spacing: 2.5px; text-transform: uppercase;
+    margin-bottom: 1.2rem;
+  }
+  .eyebrow-line { width: 32px; height: 1px; background: var(--teal); }
+  .hero h1 {
+    font-family: 'Syne', sans-serif; font-weight: 800;
+    font-size: clamp(2.4rem, 5vw, 3.8rem);
+    color: var(--white); line-height: 1.05; margin-bottom: 1.2rem;
+  }
+  .hero h1 em { font-style:normal; color: var(--teal); }
+  .hero-sub {
+    max-width: 600px; line-height: 1.8; color: var(--slate);
+    font-size: 1rem; margin-bottom: 2.5rem;
+  }
+  .hero-badges { display:flex; flex-wrap:wrap; gap:0.8rem; }
+  .badge {
+    display:flex; align-items:center; gap:0.5rem;
+    background: var(--card); border: 1px solid var(--border);
+    padding: 0.5rem 1rem; border-radius: 100px;
+    font-family: 'DM Mono', monospace; font-size: 0.7rem;
+    color: var(--light); letter-spacing: 0.3px;
+  }
+  .badge-dot { width:8px; height:8px; border-radius:50%; }
+  .dot-green { background:var(--green); box-shadow:0 0 8px var(--green); animation: blink 2s infinite; }
+  .dot-amber { background:var(--amber); }
+  .dot-blue { background:var(--blue); }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* SECTION WRAPPER */
+  .content { position:relative; z-index:1; max-width:1200px; margin:0 auto; padding:0 2.5rem 6rem; }
+
+  .sec-label {
+    font-family: 'DM Mono', monospace; font-size:0.68rem;
+    color:var(--teal); letter-spacing:2px; text-transform:uppercase;
+    margin-bottom:0.5rem;
+  }
+  .sec-title {
+    font-family: 'Syne', sans-serif; font-weight:700;
+    font-size:1.5rem; color:var(--white); margin-bottom:0.6rem;
+  }
+  .sec-desc { font-size:0.88rem; color:var(--slate); line-height:1.7; margin-bottom:2rem; max-width:680px; }
+
+  hr.div { border:none; border-top:1px solid var(--border); margin:3.5rem 0; }
+
+  /* KPI STRIP */
+  .kpi-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 3.5rem;
+  }
+  .kpi-cell {
+    background: var(--card);
+    padding: 1.6rem 1.4rem;
+    display: flex; flex-direction:column; gap:0.3rem;
+    transition: background 0.2s;
+  }
+  .kpi-cell:hover { background: var(--card2); }
+  .kpi-val {
+    font-family: 'Syne', sans-serif; font-weight:800;
+    font-size: 2rem; line-height:1;
+  }
+  .kpi-val.green { color:var(--green); }
+  .kpi-val.teal { color:var(--teal); }
+  .kpi-val.amber { color:var(--amber); }
+  .kpi-val.blue { color:#7eb3ff; }
+  .kpi-label { font-size:0.78rem; color:var(--slate); line-height:1.4; }
+  .kpi-note { font-family:'DM Mono',monospace; font-size:0.62rem; color:var(--teal); margin-top:0.2rem; }
+
+  /* TIMELINE */
+  .timeline { position:relative; padding-left:2.5rem; }
+  .timeline::before {
+    content:''; position:absolute; left:0; top:8px; bottom:8px;
+    width:2px; background: linear-gradient(to bottom, var(--teal), var(--blue), transparent);
+  }
+  .tl-item {
+    position:relative; margin-bottom:2.2rem;
+    opacity: 0; animation: fadeUp 0.5s forwards;
+  }
+  .tl-item:nth-child(1){animation-delay:0.1s}
+  .tl-item:nth-child(2){animation-delay:0.2s}
+  .tl-item:nth-child(3){animation-delay:0.3s}
+  .tl-item:nth-child(4){animation-delay:0.4s}
+  .tl-item:nth-child(5){animation-delay:0.5s}
+  .tl-item:nth-child(6){animation-delay:0.6s}
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:none} }
+
+  .tl-dot {
+    position:absolute; left:-2.9rem; top:4px;
+    width:14px; height:14px; border-radius:50%;
+    border:2px solid var(--teal); background:var(--navy);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .tl-dot::after { content:''; width:6px; height:6px; border-radius:50%; background:var(--teal); }
+  .tl-dot.amber { border-color:var(--amber); }
+  .tl-dot.amber::after { background:var(--amber); }
+  .tl-dot.blue { border-color:var(--blue); }
+  .tl-dot.blue::after { background:var(--blue); }
+
+  .tl-week {
+    font-family:'DM Mono',monospace; font-size:0.68rem;
+    color:var(--teal); letter-spacing:1.5px; text-transform:uppercase;
+    margin-bottom:0.3rem;
+  }
+  .tl-week.amber { color:var(--amber); }
+  .tl-week.blue { color:#7eb3ff; }
+  .tl-title {
+    font-family:'Syne',sans-serif; font-weight:700;
+    font-size:1rem; color:var(--white); margin-bottom:0.5rem;
+  }
+  .tl-body { font-size:0.84rem; color:var(--slate); line-height:1.7; }
+  .tl-tags { display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.7rem; }
+  .tl-tag {
+    font-family:'DM Mono',monospace; font-size:0.62rem;
+    padding:2px 9px; border-radius:4px;
+    background:var(--card); border:1px solid var(--border); color:var(--slate);
+  }
+
+  /* CHECKLIST GRID */
+  .checklist-grid {
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));
+    gap:1.5rem;
+  }
+  .checklist-card {
+    background:var(--card); border:1px solid var(--border);
+    border-radius:10px; padding:1.5rem;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .checklist-card:hover { border-color:var(--teal-mid); transform:translateY(-2px); }
+  .cc-header {
+    display:flex; align-items:center; gap:0.8rem;
+    margin-bottom:1.1rem;
+  }
+  .cc-icon {
+    width:36px; height:36px; border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:1rem; flex-shrink:0;
+  }
+  .cc-title { font-family:'Syne',sans-serif; font-weight:700; font-size:0.95rem; color:var(--white); }
+  .cc-list { list-style:none; }
+  .cc-list li {
+    display:flex; align-items:flex-start; gap:0.7rem;
+    padding:0.45rem 0; border-bottom:1px solid var(--border);
+    font-size:0.82rem; color:var(--light); line-height:1.5;
+  }
+  .cc-list li:last-child { border-bottom:none; }
+  .cc-check {
+    flex-shrink:0; width:16px; height:16px; border-radius:3px;
+    border:1.5px solid var(--teal); margin-top:2px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:0.6rem; color:var(--teal);
+  }
+  .cc-check.pending { border-color:var(--amber); color:var(--amber); }
+  .cc-check.confirm { border-color:#7eb3ff; color:#7eb3ff; }
+
+  /* SUCCESS METRICS TABLE */
+  .metrics-table { width:100%; border-collapse:collapse; }
+  .metrics-table thead tr { border-bottom:2px solid var(--border); }
+  .metrics-table th {
+    font-family:'DM Mono',monospace; font-size:0.68rem;
+    color:var(--teal); letter-spacing:1.2px; text-transform:uppercase;
+    padding:0.8rem 1.2rem; text-align:left;
+  }
+  .metrics-table td {
+    padding:0.9rem 1.2rem; border-bottom:1px solid var(--border);
+    font-size:0.84rem; color:var(--light); vertical-align:top; line-height:1.5;
+  }
+  .metrics-table tr:hover td { background:var(--teal-dim); }
+  .metrics-table td.metric-val {
+    font-family:'DM Mono',monospace; font-weight:500; color:var(--teal);
+  }
+  .metrics-table td.metric-label { font-weight:600; color:var(--white); }
+
+  /* DELIVERABLES */
+  .deliverables-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1rem; }
+  .deliv-card {
+    background:var(--card); border:1px solid var(--border);
+    border-radius:8px; padding:1.2rem;
+    display:flex; flex-direction:column; gap:0.5rem;
+  }
+  .deliv-num {
+    font-family:'Syne',sans-serif; font-weight:800;
+    font-size:2.2rem; color:var(--teal-mid); line-height:1;
+  }
+  .deliv-title { font-family:'Syne',sans-serif; font-weight:700; font-size:0.9rem; color:var(--white); }
+  .deliv-desc { font-size:0.78rem; color:var(--slate); line-height:1.5; }
+
+  /* CTA BLOCK */
+  .cta-block {
+    background: linear-gradient(135deg, var(--card) 0%, #0a2240 100%);
+    border:1px solid var(--teal-mid); border-radius:14px;
+    padding:3rem; text-align:center; margin-top:3rem;
+    position:relative; overflow:hidden;
+  }
+  .cta-block::before {
+    content:''; position:absolute; top:-60px; right:-60px;
+    width:200px; height:200px; border-radius:50%;
+    background: radial-gradient(circle, var(--teal-dim), transparent 70%);
+    pointer-events:none;
+  }
+  .cta-title { font-family:'Syne',sans-serif; font-weight:800; font-size:1.8rem; color:var(--white); margin-bottom:0.8rem; }
+  .cta-sub { font-size:0.9rem; color:var(--slate); margin-bottom:1.8rem; max-width:500px; margin-left:auto; margin-right:auto; line-height:1.7; }
+  .cta-btns { display:flex; justify-content:center; gap:1rem; flex-wrap:wrap; }
+  .btn-primary { background:var(--teal); color:var(--navy); padding:0.75rem 2rem; border-radius:6px; font-weight:700; font-size:0.88rem; text-decoration:none; transition:opacity 0.2s; }
+  .btn-primary:hover { opacity:0.85; }
+  .btn-secondary { border:1px solid var(--teal); color:var(--teal); padding:0.75rem 2rem; border-radius:6px; font-weight:700; font-size:0.88rem; text-decoration:none; transition:background 0.2s; }
+  .btn-secondary:hover { background:var(--teal-dim); }
+
+  /* FOOTER */
+  footer {
+    border-top:1px solid var(--border); padding:2rem 2.5rem;
+    display:flex; justify-content:space-between; align-items:center;
+    max-width:1200px; margin:0 auto; position:relative; z-index:1;
+  }
+  footer p { font-size:0.78rem; color:var(--slate); }
+
+  @media(max-width:768px){
+    .nav-links{display:none;}
+    .hero{padding:5rem 1.5rem 2.5rem;}
+    .content{padding:0 1.5rem 4rem;}
+    .timeline{padding-left:1.8rem;}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">ReUse360™</div>
+  <div class="nav-links">
+    <a href="../index.html">Home</a>
+    <a href="../about.html">About</a>
+    <a href="../solutions.html">Solutions</a>
+    <a href="integration.html">Integration</a>
+    <a href="#" class="active">Pilot Program</a>
+    <a href="../contact.html">Contact</a>
+  </div>
+  <a href="../contact.html" class="nav-cta">Request Demo</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow"><span class="eyebrow-line"></span>Pinellas County Utilities — Pre-Pilot Proposal</div>
+  <h1>30-Day Pilot<br><em>Program Scope</em></h1>
+  <p class="hero-sub">A defined, measurable, and operationally bounded pilot designed to validate ReUse360™ compliance tracking accuracy, customer engagement, and violation reduction before full-scale deployment.</p>
+  <div class="hero-badges">
+    <div class="badge"><div class="badge-dot dot-green"></div>100–500 Target Households</div>
+    <div class="badge"><div class="badge-dot dot-amber"></div>50 PWA Volunteers</div>
+    <div class="badge"><div class="badge-dot dot-blue"></div>30-Day Duration</div>
+    <div class="badge"><div class="badge-dot dot-green"></div>95.3% Tracking Accuracy Target</div>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- KPI STRIP -->
+  <div class="kpi-strip">
+    <div class="kpi-cell">
+      <div class="kpi-val green">95.3%</div>
+      <div class="kpi-label">Compliance tracking accuracy target</div>
+      <div class="kpi-note">Validation benchmark</div>
+    </div>
+    <div class="kpi-cell">
+      <div class="kpi-val teal">15%</div>
+      <div class="kpi-label">Target reduction in wrong-day violations</div>
+      <div class="kpi-note">Test group vs. control</div>
+    </div>
+    <div class="kpi-cell">
+      <div class="kpi-val amber">≥10</div>
+      <div class="kpi-label">Simulated violations auto-logged</div>
+      <div class="kpi-note">Workflow validation</div>
+    </div>
+    <div class="kpi-cell">
+      <div class="kpi-val blue">50</div>
+      <div class="kpi-label">PWA volunteer cohort</div>
+      <div class="kpi-note">Customer engagement sample</div>
+    </div>
+    <div class="kpi-cell">
+      <div class="kpi-val teal">100%</div>
+      <div class="kpi-label">Address Calculator uptime SLA</div>
+      <div class="kpi-note">Zero downtime target</div>
+    </div>
+    <div class="kpi-cell">
+      <div class="kpi-val green">30</div>
+      <div class="kpi-label">Days to measurable outcome</div>
+      <div class="kpi-note">Scale/no-scale decision point</div>
+    </div>
+  </div>
+
+  <!-- TIMELINE -->
+  <div class="sec-label">Pilot Timeline</div>
+  <div class="sec-title">Week-by-Week Execution Plan</div>
+  <div class="sec-desc">Four phases covering setup, live detection, engagement measurement, and final reporting — structured to produce a scale/no-scale decision memo at day 30.</div>
+
+  <div class="timeline">
+
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-week">Days 1–5 — Pre-Launch</div>
+      <div class="tl-title">Environment Configuration & Data Onboarding</div>
+      <div class="tl-body">Confirm pilot population selection (100–500 households). Establish secure AMI feed (CSV or API, daily at 02:00). Load GIS parcel layer with zoning, reuse zone, and HOA boundary data. Configure ordinance rules (ORD 82.2 schedules, drought stage baseline, exemptions). Establish role-based access for analyst, enforcement, and admin lanes. Deploy PWA to 50 volunteer cohort.</div>
+      <div class="tl-tags">
+        <span class="tl-tag">AMI Feed Setup</span>
+        <span class="tl-tag">GIS Load</span>
+        <span class="tl-tag">Ordinance Config</span>
+        <span class="tl-tag">PWA Deploy</span>
+        <span class="tl-tag">RBAC</span>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot amber"></div>
+      <div class="tl-week amber">Days 6–10 — Week 1 Live</div>
+      <div class="tl-title">First Ingestion Cycle & Baseline Validation</div>
+      <div class="tl-body">Execute first full ingestion cycle. Validate schema, deduplication, and timestamp alignment on pilot parcel set. Confirm 95.3% compliance tracking accuracy on sample. Review work queue classification — wrong-day, overwatering risk, anomaly flags. Log first batch of simulated violations to validate automated SR logic. Capture ingestion success rate and queue backlog metrics.</div>
+      <div class="tl-tags">
+        <span class="tl-tag">Ingestion Validation</span>
+        <span class="tl-tag">Accuracy Benchmark</span>
+        <span class="tl-tag">Work Queue Review</span>
+        <span class="tl-tag">Simulated SRs</span>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-week">Days 11–20 — Weeks 2–3</div>
+      <div class="tl-title">Customer Engagement & Behavior Measurement</div>
+      <div class="tl-body">Issue targeted outreach to flagged households — education notices, ordinance guidance, PWA tips. Open 7–14 day response window per case. Monitor PWA engagement signals from 50-volunteer cohort. Track wrong-day violation rate in test group vs. control group. Capture verification uploads (rain sensor photo confirmations). Re-check compliance after outreach window closes — confirm case closure or escalation routing.</div>
+      <div class="tl-tags">
+        <span class="tl-tag">Outreach Delivery</span>
+        <span class="tl-tag">PWA Engagement</span>
+        <span class="tl-tag">Response Window</span>
+        <span class="tl-tag">Behavior Recheck</span>
+        <span class="tl-tag">Verification Upload</span>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot amber"></div>
+      <div class="tl-week amber">Days 21–25 — Week 4</div>
+      <div class="tl-title">Enforcement Workflow & Escalation Testing</div>
+      <div class="tl-body">Route non-compliant cases to enforcement lane. Validate penalty logic against ordinance ruleset. Confirm audit-ready documentation output. Test access control checks and audit log review. Capture staff and volunteer feedback via structured survey. Review dispute handling workflow on any contested cases.</div>
+      <div class="tl-tags">
+        <span class="tl-tag">Penalty Logic</span>
+        <span class="tl-tag">Audit Log Review</span>
+        <span class="tl-tag">Access Control Test</span>
+        <span class="tl-tag">Staff Feedback</span>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot blue"></div>
+      <div class="tl-week blue">Days 26–30 — Close-Out</div>
+      <div class="tl-title">Results Memo & Scale Decision</div>
+      <div class="tl-body">Produce pilot results memo: accuracy rate, violation reduction delta, engagement metrics, uptime log, and enforcement throughput. Finalize interface documentation — schemas and sample payloads. Present scale/no-scale recommendation with supporting KPI data. Deliver hardening recommendations for full-scale deployment scope.</div>
+      <div class="tl-tags">
+        <span class="tl-tag">Results Memo</span>
+        <span class="tl-tag">Schema Docs</span>
+        <span class="tl-tag">Scale Decision</span>
+        <span class="tl-tag">KPI Package</span>
+      </div>
+    </div>
+
+  </div>
+
+  <hr class="div">
+
+  <!-- IT CHECKLIST -->
+  <div class="sec-label">IT Readiness Checklist</div>
+  <div class="sec-title">What IT Will Ask Before Approving the Pilot</div>
+  <div class="sec-desc">Five categories drawn from the ReUse360™ technical scope checklist. Items marked Pending require confirmation from Pinellas County IT, AMI team, or system administrators before pilot launch.</div>
+
+  <div class="checklist-grid">
+
+    <div class="checklist-card">
+      <div class="cc-header">
+        <div class="cc-icon" style="background:#22c55e18">🎯</div>
+        <div class="cc-title">A — Pilot Boundaries</div>
+      </div>
+      <ul class="cc-list">
+        <li><div class="cc-check">✓</div>Pilot population: 100–500 households, defined selection method</li>
+        <li><div class="cc-check">✓</div>PWA volunteer cohort: 50 users confirmed</li>
+        <li><div class="cc-check">✓</div>Pilot duration: 30 days</li>
+        <li><div class="cc-check">✓</div>In-scope modules: Utility KPI Dashboard, customer tips, compliance pages, case logging</li>
+      </ul>
+    </div>
+
+    <div class="checklist-card">
+      <div class="cc-header">
+        <div class="cc-icon" style="background:#f59e0b18">🔌</div>
+        <div class="cc-title">B — Interfaces & Data Movement</div>
+      </div>
+      <ul class="cc-list">
+        <li><div class="cc-check pending">?</div>Ingestion method: API (preferred) or secure CSV drop — <em style="color:var(--amber);font-size:0.75rem">confirm with AMI team</em></li>
+        <li><div class="cc-check">✓</div>Payload formats: CSV baseline; JSON/XML optional burst</li>
+        <li><div class="cc-check">✓</div>Refresh frequency: daily at 02:00; cutoff time documented</li>
+        <li><div class="cc-check">✓</div>Error handling: reject rules, error queue, reprocess procedure</li>
+        <li><div class="cc-check pending">?</div>GIS delivery method: file export vs. service endpoint — <em style="color:var(--amber);font-size:0.75rem">confirm with GIS team</em></li>
+      </ul>
+    </div>
+
+    <div class="checklist-card">
+      <div class="cc-header">
+        <div class="cc-icon" style="background:#1a6bff18">🔐</div>
+        <div class="cc-title">C — Security & Governance</div>
+      </div>
+      <ul class="cc-list">
+        <li><div class="cc-check confirm">→</div>Authentication: SSO/RBAC standard — <em style="color:#7eb3ff;font-size:0.75rem">confirm with County IT</em></li>
+        <li><div class="cc-check">✓</div>Role-based access: Admin / Analyst / Enforcement / Read-only</li>
+        <li><div class="cc-check">✓</div>Encryption in transit (TLS 1.3) and at rest (AES-256)</li>
+        <li><div class="cc-check">✓</div>PII minimization: only required workflow identifiers stored</li>
+        <li><div class="cc-check">✓</div>Retention policy: raw payload vs. processed aggregates defined</li>
+        <li><div class="cc-check">✓</div>Audit logging: ingestion, user actions, rule changes (drought stage)</li>
+      </ul>
+    </div>
+
+    <div class="checklist-card">
+      <div class="cc-header">
+        <div class="cc-icon" style="background:#00c9a718">⚙️</div>
+        <div class="cc-title">D — Operations & Reliability</div>
+      </div>
+      <ul class="cc-list">
+        <li><div class="cc-check">✓</div>Uptime SLA: 100% — zero downtime for Address Calculator</li>
+        <li><div class="cc-check">✓</div>Monitoring: ingestion success rate, queue backlog, response time</li>
+        <li><div class="cc-check">✓</div>Incident process: owner, triage, response time targets defined</li>
+        <li><div class="cc-check confirm">→</div>Cityworks SR API: confirm with Shane before enforcement test</li>
+      </ul>
+    </div>
+
+    <div class="checklist-card">
+      <div class="cc-header">
+        <div class="cc-icon" style="background:#22c55e18">✅</div>
+        <div class="cc-title">E — Testing & Acceptance</div>
+      </div>
+      <ul class="cc-list">
+        <li><div class="cc-check">✓</div>Data validation: 95.3% tracking accuracy on sample set</li>
+        <li><div class="cc-check">✓</div>Behavioral outcome: 15% reduction in wrong-day violations (test vs. control)</li>
+        <li><div class="cc-check">✓</div>Workflow test: ≥10 simulated violations auto-logged</li>
+        <li><div class="cc-check">✓</div>Mobile/PWA test: installability + cross-device responsiveness</li>
+        <li><div class="cc-check">✓</div>Security test: access control + audit log review</li>
+        <li><div class="cc-check">✓</div>User acceptance: staff and volunteer feedback captured</li>
+      </ul>
+    </div>
+
+    <div class="checklist-card">
+      <div class="cc-header">
+        <div class="cc-icon" style="background:#7c3aed20">📋</div>
+        <div class="cc-title">F — Pilot Close Deliverables</div>
+      </div>
+      <ul class="cc-list">
+        <li><div class="cc-check">✓</div>Results memo: accuracy, engagement, violation reduction, uptime</li>
+        <li><div class="cc-check">✓</div>Interface documentation: final schemas + sample payloads</li>
+        <li><div class="cc-check">✓</div>Scale/no-scale recommendation with KPI data</li>
+        <li><div class="cc-check">✓</div>Hardening recommendations for full-scale deployment</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <hr class="div">
+
+  <!-- SUCCESS METRICS TABLE -->
+  <div class="sec-label">Success Metrics</div>
+  <div class="sec-title">Pilot Acceptance Criteria</div>
+  <div class="sec-desc">Quantified thresholds that define a successful pilot outcome and support the scale/no-scale decision memo at day 30.</div>
+
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden">
+    <table class="metrics-table">
+      <thead>
+        <tr>
+          <th>Metric</th>
+          <th>Target</th>
+          <th>Measurement Method</th>
+          <th>Decision Impact</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="metric-label">Compliance Tracking Accuracy</td>
+          <td class="metric-val">≥ 95.3%</td>
+          <td style="font-size:0.8rem;color:var(--slate)">Validated against confirmed parcel compliance status on sample set</td>
+          <td style="font-size:0.8rem;color:var(--slate)">Primary go/no-go threshold</td>
+        </tr>
+        <tr>
+          <td class="metric-label">Wrong-Day Violation Reduction</td>
+          <td class="metric-val">≥ 15%</td>
+          <td style="font-size:0.8rem;color:var(--slate)">Test group vs. control group delta over 30-day window</td>
+          <td style="font-size:0.8rem;color:var(--slate)">Behavior change validation</td>
+        </tr>
+        <tr>
+          <td class="metric-label">Simulated Violations Auto-Logged</td>
+          <td class="metric-val">≥ 10</td>
+          <td style="font-size:0.8rem;color:var(--slate)">Automated SR creation from injected test events</td>
+          <td style="font-size:0.8rem;color:var(--slate)">Enforcement workflow proof</td>
+        </tr>
+        <tr>
+          <td class="metric-label">Address Calculator Uptime</td>
+          <td class="metric-val">100%</td>
+          <td style="font-size:0.8rem;color:var(--slate)">Uptime monitoring log over full 30-day period</td>
+          <td style="font-size:0.8rem;color:var(--slate)">Reliability baseline for SLA</td>
+        </tr>
+        <tr>
+          <td class="metric-label">PWA Installation Rate</td>
+          <td class="metric-val">≥ 70%</td>
+          <td style="font-size:0.8rem;color:var(--slate)">Of 50 volunteer cohort — confirmed installs</td>
+          <td style="font-size:0.8rem;color:var(--slate)">Customer adoption signal</td>
+        </tr>
+        <tr>
+          <td class="metric-label">Ingestion Success Rate</td>
+          <td class="metric-val">≥ 98%</td>
+          <td style="font-size:0.8rem;color:var(--slate)">Valid records processed / total records received</td>
+          <td style="font-size:0.8rem;color:var(--slate)">Data pipeline reliability</td>
+        </tr>
+        <tr>
+          <td class="metric-label">False-Positive Alert Rate</td>
+          <td class="metric-val">≤ 8%</td>
+          <td style="font-size:0.8rem;color:var(--slate)">Confirmed non-violation events flagged as violations</td>
+          <td style="font-size:0.8rem;color:var(--slate)">Enforcement credibility floor</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <hr class="div">
+
+  <!-- DELIVERABLES -->
+  <div class="sec-label">Day-30 Deliverables</div>
+  <div class="sec-title">What Pinellas County Receives at Pilot Close</div>
+
+  <div class="deliverables-grid">
+    <div class="deliv-card">
+      <div class="deliv-num">01</div>
+      <div class="deliv-title">Results Memo</div>
+      <div class="deliv-desc">Accuracy rate, violation reduction delta, engagement metrics, uptime log, and enforcement throughput — formatted for Director review.</div>
+    </div>
+    <div class="deliv-card">
+      <div class="deliv-num">02</div>
+      <div class="deliv-title">Interface Documentation</div>
+      <div class="deliv-desc">Finalized AMI and GIS schemas, sample payloads, field-level data dictionary, and error queue handling reference.</div>
+    </div>
+    <div class="deliv-card">
+      <div class="deliv-num">03</div>
+      <div class="deliv-title">Scale Recommendation</div>
+      <div class="deliv-desc">Data-supported scale/no-scale decision with KPI evidence, risk flags, and hardening priorities for full-county deployment.</div>
+    </div>
+    <div class="deliv-card">
+      <div class="deliv-num">04</div>
+      <div class="deliv-title">Audit Log Package</div>
+      <div class="deliv-desc">Complete audit trail of ingestion events, rule changes, user actions, and SR generation — Chapter 119 ready.</div>
+    </div>
+    <div class="deliv-card">
+      <div class="deliv-num">05</div>
+      <div class="deliv-title">Staff Feedback Report</div>
+      <div class="deliv-desc">Structured analyst and enforcement feedback on workflow usability, queue accuracy, and outreach effectiveness.</div>
+    </div>
+    <div class="deliv-card">
+      <div class="deliv-num">06</div>
+      <div class="deliv-title">Volunteer Engagement Report</div>
+      <div class="deliv-desc">PWA adoption rate, notification response rate, and compliance behavior shift in the 50-person volunteer cohort.</div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-block">
+    <div class="cta-title">Ready to Launch the Pilot?</div>
+    <p class="cta-sub">Three open confirmations remain before pilot launch: AMI ingestion method, GIS delivery endpoint, and Cityworks SR API access. Once confirmed, ReUse360™ can be configured and live within 5 days.</p>
+    <div class="cta-btns">
+      <a href="../contact.html" class="btn-primary">Schedule Pilot Kickoff</a>
+      <a href="integration.html" class="btn-secondary">Review Integration Architecture</a>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <p>© 2025 ReUse360™ — Created by Dr. Franklin Roberson</p>
+  <p style="font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--teal)">Pilot Program v1.0 — Pinellas County Utilities</p>
+</footer>
+
+</body>
+</html>

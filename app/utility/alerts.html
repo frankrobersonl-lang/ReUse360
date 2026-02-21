@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alerts - ReUse360</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=Nunito+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0a1628; --deep: #0d1f3c; --card: #0f2545; --card2: #112952;
+    --border: #1e3a5f; --teal: #00c9a7; --teal-dim: #00c9a715; --teal-mid: #00c9a745;
+    --blue: #1a6bff; --blue-dim: #1a6bff18; --amber: #f59e0b; --amber-dim: #f59e0b18;
+    --green: #22c55e; --green-dim: #22c55e18; --red: #ef4444; --red-dim: #ef444420;
+    --slate: #94a3b8; --light: #e2e8f0; --white: #f8fafc;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--navy); color:var(--light); font-family:'Nunito Sans',sans-serif; font-weight:300; }
+
+  /* UTILITY NAV */
+  .util-nav {
+    background: linear-gradient(135deg, #0d1f3c, #0a2a5c);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+  }
+  .util-nav-top {
+    display:flex; align-items:center; justify-content:space-between;
+    height:56px;
+  }
+  .util-brand { display:flex; align-items:center; gap:0.6rem; }
+  .util-brand-icon { font-size:1.2rem; }
+  .util-brand-name { font-family:'Syne',sans-serif; font-weight:800; font-size:1.1rem; color:var(--white); }
+  .util-admin { font-family:'DM Mono',monospace; font-size:0.72rem; color:var(--slate); }
+  .util-tabs { display:flex; gap:0; border-top:1px solid var(--border); }
+  .util-tab {
+    padding:0.7rem 1.3rem; font-size:0.82rem; font-weight:600;
+    color:var(--slate); text-decoration:none; border-bottom:2px solid transparent;
+    transition:all 0.2s; letter-spacing:0.3px;
+  }
+  .util-tab:hover { color:var(--light); }
+  .util-tab.active { color:var(--teal); border-bottom-color:var(--teal); }
+
+  .page { max-width:1100px; margin:0 auto; padding:2rem; }
+
+  .page-header {
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;
+  }
+  .page-title { font-family:'Syne',sans-serif; font-weight:700; font-size:1.4rem; color:var(--white); }
+
+  .filter-bar { display:flex; gap:0.8rem; flex-wrap:wrap; margin-bottom:1.5rem; }
+  .filter-btn {
+    padding:0.4rem 1rem; border-radius:100px; border:1px solid var(--border);
+    background:var(--card); color:var(--slate); font-size:0.8rem; font-weight:600;
+    cursor:pointer; transition:all 0.2s;
+  }
+  .filter-btn:hover, .filter-btn.active { border-color:var(--teal); color:var(--teal); background:var(--teal-dim); }
+  .filter-btn.red.active { border-color:var(--red); color:var(--red); background:var(--red-dim); }
+  .filter-btn.amber.active { border-color:var(--amber); color:var(--amber); background:var(--amber-dim); }
+
+  /* KPI STRIP */
+  .kpi-strip {
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+    gap:1px; background:var(--border); border:1px solid var(--border);
+    border-radius:10px; overflow:hidden; margin-bottom:2rem;
+  }
+  .kpi-cell {
+    background:var(--card); padding:1.2rem 1rem;
+    display:flex; flex-direction:column; gap:0.2rem;
+  }
+  .kpi-val { font-family:'Syne',sans-serif; font-weight:800; font-size:1.8rem; line-height:1; }
+  .kpi-val.red { color:var(--red); }
+  .kpi-val.amber { color:var(--amber); }
+  .kpi-val.green { color:var(--green); }
+  .kpi-val.teal { color:var(--teal); }
+  .kpi-label { font-size:0.75rem; color:var(--slate); }
+
+  /* ALERT CARDS */
+  .alerts-list { display:flex; flex-direction:column; gap:0.8rem; margin-bottom:2rem; }
+  .alert-card {
+    background:var(--card); border:1px solid var(--border);
+    border-radius:10px; padding:1.2rem 1.5rem;
+    display:flex; align-items:flex-start; gap:1rem;
+    transition:border-color 0.2s;
+    border-left:4px solid var(--border);
+  }
+  .alert-card.critical { border-left-color:var(--red); }
+  .alert-card.warning { border-left-color:var(--amber); }
+  .alert-card.info { border-left-color:var(--teal); }
+  .alert-card.resolved { border-left-color:var(--green); opacity:0.7; }
+
+  .alert-icon { font-size:1.4rem; flex-shrink:0; margin-top:2px; }
+  .alert-body { flex:1; }
+  .alert-top { display:flex; align-items:center; gap:0.8rem; flex-wrap:wrap; margin-bottom:0.3rem; }
+  .alert-title { font-family:'Syne',sans-serif; font-weight:700; font-size:0.95rem; color:var(--white); }
+  .alert-badge {
+    font-family:'DM Mono',monospace; font-size:0.62rem; font-weight:700;
+    padding:2px 8px; border-radius:100px; letter-spacing:0.8px; text-transform:uppercase;
+  }
+  .badge-critical { background:var(--red-dim); color:var(--red); }
+  .badge-warning { background:var(--amber-dim); color:var(--amber); }
+  .badge-info { background:var(--teal-dim); color:var(--teal); }
+  .badge-resolved { background:var(--green-dim); color:var(--green); }
+
+  .alert-desc { font-size:0.83rem; color:var(--slate); line-height:1.6; margin-bottom:0.5rem; }
+  .alert-meta { display:flex; gap:1.5rem; font-family:'DM Mono',monospace; font-size:0.68rem; color:var(--slate); }
+  .alert-actions { display:flex; gap:0.5rem; flex-shrink:0; flex-wrap:wrap; }
+  .btn-sm {
+    padding:0.35rem 0.9rem; border-radius:5px; font-size:0.78rem; font-weight:600;
+    cursor:pointer; text-decoration:none; border:none; transition:all 0.2s;
+  }
+  .btn-teal { background:var(--teal); color:var(--navy); }
+  .btn-teal:hover { opacity:0.85; }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--slate); }
+  .btn-outline:hover { border-color:var(--teal); color:var(--teal); }
+  .btn-red { background:var(--red-dim); color:var(--red); border:1px solid var(--red); }
+
+  /* NOTIFICATION SETTINGS */
+  .settings-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:1.2rem; }
+  .setting-card {
+    background:var(--card); border:1px solid var(--border);
+    border-radius:10px; padding:1.3rem;
+  }
+  .setting-header { display:flex; align-items:center; gap:0.7rem; margin-bottom:1rem; }
+  .setting-icon { font-size:1.1rem; }
+  .setting-title { font-family:'Syne',sans-serif; font-weight:700; font-size:0.92rem; color:var(--white); }
+  .setting-row {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0.5rem 0; border-bottom:1px solid var(--border);
+    font-size:0.82rem; color:var(--light);
+  }
+  .setting-row:last-child { border-bottom:none; }
+  .toggle {
+    width:36px; height:20px; background:var(--border); border-radius:100px;
+    position:relative; cursor:pointer; transition:background 0.2s; flex-shrink:0;
+  }
+  .toggle.on { background:var(--teal); }
+  .toggle::after {
+    content:''; position:absolute; top:3px; left:3px;
+    width:14px; height:14px; border-radius:50%; background:white;
+    transition:left 0.2s;
+  }
+  .toggle.on::after { left:19px; }
+
+  .sec-label { font-family:'DM Mono',monospace; font-size:0.68rem; color:var(--teal); letter-spacing:2px; text-transform:uppercase; margin-bottom:0.5rem; }
+  .sec-title { font-family:'Syne',sans-serif; font-weight:700; font-size:1.2rem; color:var(--white); margin-bottom:0.4rem; }
+  .sec-desc { font-size:0.85rem; color:var(--slate); margin-bottom:1.5rem; }
+  hr.div { border:none; border-top:1px solid var(--border); margin:2rem 0; }
+
+  .back-link { display:inline-flex; align-items:center; gap:0.4rem; color:var(--slate); font-size:0.82rem; text-decoration:none; margin-bottom:1.5rem; }
+  .back-link:hover { color:var(--teal); }
+</style>
+</head>
+<body>
+
+<nav class="util-nav">
+  <div class="util-nav-top">
+    <div class="util-brand">
+      <span class="util-brand-icon">🏛️</span>
+      <span class="util-brand-name">Pinellas County Utilities</span>
+    </div>
+    <span class="util-admin">Admin: System Manager</span>
+  </div>
+  <div class="util-tabs">
+    <a href="index.html" class="util-tab">Overview</a>
+    <a href="customers.html" class="util-tab">Customers</a>
+    <a href="analytics.html" class="util-tab">Analytics</a>
+    <a href="ordinances.html" class="util-tab">Ordinances</a>
+    <a href="alerts.html" class="util-tab active">Alerts</a>
+    <a href="settings.html" class="util-tab">Settings</a>
+  </div>
+</nav>
+
+<div class="page">
+  <a href="index.html" class="back-link">← Back to Dashboard</a>
+
+  <div class="page-header">
+    <div class="page-title">Alerts & Notifications</div>
+    <button class="btn-sm btn-teal">+ Create Alert Rule</button>
+  </div>
+
+  <!-- KPI STRIP -->
+  <div class="kpi-strip">
+    <div class="kpi-cell">
+      <div class="kpi-val red">3</div>
+      <div class="kpi-label">Critical — Action Required</div>
+    </div>
+    <div class="kpi-cell">
+      <div class="kpi-val amber">8</div>
+      <div class="kpi-label">Warnings — Under Review</div>
+    </div>
+    <div class="kpi-cell">
+      <div class="kpi-val teal">12</div>
+      <div class="kpi-label">Info Alerts — This Week</div>
+    </div>
+    <div class="kpi-cell">
+      <div class="kpi-val green">47</div>
+      <div class="kpi-label">Resolved — Last 30 Days</div>
+    </div>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <button class="filter-btn active" onclick="filterAlerts('all', this)">All Alerts</button>
+    <button class="filter-btn red" onclick="filterAlerts('critical', this)">Critical</button>
+    <button class="filter-btn amber" onclick="filterAlerts('warning', this)">Warning</button>
+    <button class="filter-btn" onclick="filterAlerts('info', this)">Info</button>
+    <button class="filter-btn" onclick="filterAlerts('resolved', this)">Resolved</button>
+  </div>
+
+  <!-- ALERTS LIST -->
+  <div class="sec-label">Active Alerts</div>
+  <div class="sec-title">System & Compliance Alerts</div>
+  <div class="sec-desc">Real-time monitoring alerts for compliance violations, system anomalies, and operational events.</div>
+
+  <div class="alerts-list" id="alertsList">
+
+    <div class="alert-card critical" data-type="critical">
+      <div class="alert-icon">🚨</div>
+      <div class="alert-body">
+        <div class="alert-top">
+          <div class="alert-title">High-Volume Irrigation Detected — BCH-3 Zone</div>
+          <span class="alert-badge badge-critical">Critical</span>
+        </div>
+        <div class="alert-desc">Parcel PCU-34567 (789 Beachside Ave) showing sustained irrigation flow 3.2× above zone average during restricted hours (09:15–10:45). Potential wrong-day violation — Cityworks SR creation pending manual confirmation.</div>
+        <div class="alert-meta">
+          <span>📍 BCH-3 Zone</span>
+          <span>⏱ 22 min ago</span>
+          <span>📊 2 consecutive intervals</span>
+        </div>
+      </div>
+      <div class="alert-actions">
+        <button class="btn-sm btn-teal">Create SR</button>
+        <button class="btn-sm btn-outline">Review</button>
+      </div>
+    </div>
+
+    <div class="alert-card critical" data-type="critical">
+      <div class="alert-icon">🚨</div>
+      <div class="alert-body">
+        <div class="alert-top">
+          <div class="alert-title">Repeat Violator — 3rd Offense This Month</div>
+          <span class="alert-badge badge-critical">Critical</span>
+        </div>
+        <div class="alert-desc">PCU-23456 (Johnson Residence, 456 Oakwood Drive) has triggered wrong-day irrigation alerts on Dec 18, Dec 20, and Dec 22. Escalation threshold met — civil citation workflow available.</div>
+        <div class="alert-meta">
+          <span>📍 NCT-2 Zone</span>
+          <span>⏱ 2 hrs ago</span>
+          <span>⚠ 3rd offense</span>
+        </div>
+      </div>
+      <div class="alert-actions">
+        <button class="btn-sm btn-red">Escalate</button>
+        <button class="btn-sm btn-outline">View History</button>
+      </div>
+    </div>
+
+    <div class="alert-card critical" data-type="critical">
+      <div class="alert-icon">💧</div>
+      <div class="alert-body">
+        <div class="alert-top">
+          <div class="alert-title">Possible Leak Detected — Continuous 6hr Flow</div>
+          <span class="alert-badge badge-critical">Critical</span>
+        </div>
+        <div class="alert-desc">PCU-78910 (447 Suncoast Blvd) showing uninterrupted low-flow signal (0.4 GPM) for 6+ hours overnight. Pattern consistent with irrigation leak or failed shutoff valve. Customer notification not yet sent.</div>
+        <div class="alert-meta">
+          <span>📍 CCW-1 Zone</span>
+          <span>⏱ 6 hrs ago</span>
+          <span>🔄 Continuous flow — not irrigation pattern</span>
+        </div>
+      </div>
+      <div class="alert-actions">
+        <button class="btn-sm btn-teal">Notify Customer</button>
+        <button class="btn-sm btn-outline">Dismiss</button>
+      </div>
+    </div>
+
+    <div class="alert-card warning" data-type="warning">
+      <div class="alert-icon">⚠️</div>
+      <div class="alert-body">
+        <div class="alert-top">
+          <div class="alert-title">Ingestion Delay — AMI Feed 18 min Late</div>
+          <span class="alert-badge badge-warning">Warning</span>
+        </div>
+        <div class="alert-desc">Daily AMI payload expected at 02:00 EST. Received at 02:18. Schema validation passed. No records rejected. Queue processing complete. Delay logged for SLA review.</div>
+        <div class="alert-meta">
+          <span>🔌 AMI / Beacon</span>
+          <span>⏱ Today 02:18</span>
+          <span>✓ 1,247 records processed</span>
+        </div>
+      </div>
+      <div class="alert-actions">
+        <button class="btn-sm btn-outline">View Log</button>
+      </div>
+    </div>
+
+    <div class="alert-card warning" data-type="warning">
+      <div class="alert-icon">⚠️</div>
+      <div class="alert-body">
+        <div class="alert-top">
+          <div class="alert-title">HOA Cluster — Green Valley Overwatering Risk</div>
+          <span class="alert-badge badge-warning">Warning</span>
+        </div>
+        <div class="alert-desc">5 parcels within Green Valley HOA (CCW-1) showing irrigation runtime 40–60% above ET-based optimal. No ordinance violation yet — proactive outreach recommended before next restriction window.</div>
+        <div class="alert-meta">
+          <span>📍 CCW-1 / Green Valley HOA</span>
+          <span>⏱ Yesterday</span>
+          <span>🏘 5 affected parcels</span>
+        </div>
+      </div>
+      <div class="alert-actions">
+        <button class="btn-sm btn-teal">Send Outreach</button>
+        <button class="btn-sm btn-outline">View Parcels</button>
+      </div>
+    </div>
+
+    <div class="alert-card info" data-type="info">
+      <div class="alert-icon">ℹ️</div>
+      <div class="alert-body">
+        <div class="alert-top">
+          <div class="alert-title">Drought Stage Update Available</div>
+          <span class="alert-badge badge-info">Info</span>
+        </div>
+        <div class="alert-desc">SWFWMD has issued updated Phase 1 guidance effective Jan 1, 2026. Ordinance rule set may require review. Admin authorization required to activate updated compliance schedules.</div>
+        <div class="alert-meta">
+          <span>🌊 SWFWMD</span>
+          <span>⏱ Dec 28, 2025</span>
+          <span>👤 Admin action required</span>
+        </div>
+      </div>
+      <div class="alert-actions">
+        <button class="btn-sm btn-teal">Review Rules</button>
+        <button class="btn-sm btn-outline">Dismiss</button>
+      </div>
+    </div>
+
+    <div class="alert-card info" data-type="info">
+      <div class="alert-icon">📱</div>
+      <div class="alert-body">
+        <div class="alert-top">
+          <div class="alert-title">PWA Pilot — 38 of 50 Volunteers Installed</div>
+          <span class="alert-badge badge-info">Info</span>
+        </div>
+        <div class="alert-desc">76% PWA installation rate achieved in volunteer cohort (exceeds 70% pilot target). 12 remaining invitations not yet accepted. Follow-up outreach recommended by Day 10 of pilot.</div>
+        <div class="alert-meta">
+          <span>📲 PWA Pilot</span>
+          <span>⏱ Day 7 of 30</span>
+          <span>✓ 76% install rate — target met</span>
+        </div>
+      </div>
+      <div class="alert-actions">
+        <button class="btn-sm btn-outline">View Cohort</button>
+      </div>
+    </div>
+
+    <div class="alert-card resolved" data-type="resolved">
+      <div class="alert-icon">✅</div>
+      <div class="alert-body">
+        <div class="alert-top">
+          <div class="alert-title">Outside Time Window — Martinez Property Resolved</div>
+          <span class="alert-badge badge-resolved">Resolved</span>
+        </div>
+        <div class="alert-desc">PCU-78901 (321 Pinewood Circle) confirmed compliant after 7-day outreach window. Customer adjusted irrigation controller schedule. Case closed Dec 19, 2025.</div>
+        <div class="alert-meta">
+          <span>📍 STH-4 Zone</span>
+          <span>⏱ Resolved Dec 19</span>
+          <span>📬 Outreach effective</span>
+        </div>
+      </div>
+      <div class="alert-actions">
+        <button class="btn-sm btn-outline">View Case</button>
+      </div>
+    </div>
+
+  </div>
+
+  <hr class="div">
+
+  <!-- NOTIFICATION SETTINGS PREVIEW -->
+  <div class="sec-label">Notification Rules</div>
+  <div class="sec-title">Alert Delivery Configuration</div>
+  <div class="sec-desc">Configure how and when alerts are delivered to analysts, enforcement staff, and supervisors.</div>
+
+  <div class="settings-grid">
+    <div class="setting-card">
+      <div class="setting-header">
+        <span class="setting-icon">🚨</span>
+        <div class="setting-title">Critical Alert Routing</div>
+      </div>
+      <div class="setting-row">Email — Analyst Queue <div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+      <div class="setting-row">SMS — Enforcement Lead <div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+      <div class="setting-row">Cityworks Auto-SR (High Confidence) <div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+      <div class="setting-row">Push — Supervisor Dashboard <div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+    </div>
+    <div class="setting-card">
+      <div class="setting-header">
+        <span class="setting-icon">⚠️</span>
+        <div class="setting-title">Warning Alert Routing</div>
+      </div>
+      <div class="setting-row">Email — Analyst Queue <div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+      <div class="setting-row">SMS — Enforcement Lead <div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+      <div class="setting-row">Cityworks Auto-SR (Med Confidence) <div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+      <div class="setting-row">Push — Supervisor Dashboard <div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+    </div>
+    <div class="setting-card">
+      <div class="setting-header">
+        <span class="setting-icon">💧</span>
+        <div class="setting-title">Leak Detection Alerts</div>
+      </div>
+      <div class="setting-row">Customer Push Notification <div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+      <div class="setting-row">Email to Account Holder <div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+      <div class="setting-row">Route to AMI Team <div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+      <div class="setting-row">Auto-suppress if rain event <div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+    </div>
+    <div class="setting-card">
+      <div class="setting-header">
+        <span class="setting-icon">🌊</span>
+        <div class="setting-title">Drought Stage Alerts</div>
+      </div>
+      <div class="setting-row">Notify All Customers <div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+      <div class="setting-row">Update Compliance Rules <div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+      <div class="setting-row">Require Admin Dual-Auth <div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+      <div class="setting-row">Log to Audit Trail <div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function filterAlerts(type, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    b.classList.remove('active','red','amber');
+  });
+  btn.classList.add('active');
+  if(type==='critical') btn.classList.add('red');
+  if(type==='warning') btn.classList.add('amber');
+
+  document.querySelectorAll('.alert-card').forEach(card => {
+    if(type==='all' || card.dataset.type===type) {
+      card.style.display='flex';
+    } else {
+      card.style.display='none';
+    }
+  });
+}
+</script>
+</body>
+</html>
+<!-- file is complete -->

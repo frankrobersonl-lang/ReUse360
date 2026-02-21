@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings - ReUse360 Utility Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=Nunito+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0a1628; --deep: #0d1f3c; --card: #0f2545; --card2: #112952;
+    --border: #1e3a5f; --teal: #00c9a7; --teal-dim: #00c9a715; --teal-mid: #00c9a745;
+    --blue: #1a6bff; --blue-dim: #1a6bff18; --amber: #f59e0b; --amber-dim: #f59e0b18;
+    --green: #22c55e; --green-dim: #22c55e18; --red: #ef4444; --red-dim: #ef444420;
+    --slate: #94a3b8; --light: #e2e8f0; --white: #f8fafc;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--navy); color:var(--light); font-family:'Nunito Sans',sans-serif; font-weight:300; }
+
+  .util-nav {
+    background: linear-gradient(135deg, #0d1f3c, #0a2a5c);
+    border-bottom: 1px solid var(--border); padding: 0 2rem;
+  }
+  .util-nav-top { display:flex; align-items:center; justify-content:space-between; height:56px; }
+  .util-brand { display:flex; align-items:center; gap:0.6rem; }
+  .util-brand-name { font-family:'Syne',sans-serif; font-weight:800; font-size:1.1rem; color:var(--white); }
+  .util-admin { font-family:'DM Mono',monospace; font-size:0.72rem; color:var(--slate); }
+  .util-tabs { display:flex; border-top:1px solid var(--border); }
+  .util-tab {
+    padding:0.7rem 1.3rem; font-size:0.82rem; font-weight:600;
+    color:var(--slate); text-decoration:none; border-bottom:2px solid transparent; transition:all 0.2s;
+  }
+  .util-tab:hover { color:var(--light); }
+  .util-tab.active { color:var(--teal); border-bottom-color:var(--teal); }
+
+  .page { max-width:1100px; margin:0 auto; padding:2rem; padding-bottom:5rem; }
+  .page-title { font-family:'Syne',sans-serif; font-weight:700; font-size:1.4rem; color:var(--white); margin-bottom:1.5rem; }
+  .back-link { display:inline-flex; align-items:center; gap:0.4rem; color:var(--slate); font-size:0.82rem; text-decoration:none; margin-bottom:1.5rem; }
+  .back-link:hover { color:var(--teal); }
+
+  .settings-layout { display:grid; grid-template-columns:210px 1fr; gap:2rem; }
+
+  .settings-nav { display:flex; flex-direction:column; gap:0.25rem; }
+  .snav-item {
+    padding:0.65rem 1rem; border-radius:7px; font-size:0.84rem; font-weight:600;
+    color:var(--slate); cursor:pointer; transition:all 0.2s; border:none;
+    background:transparent; text-align:left; display:flex; align-items:center; gap:0.6rem;
+  }
+  .snav-item:hover { background:var(--card); color:var(--light); }
+  .snav-item.active { background:var(--teal-dim); color:var(--teal); border:1px solid var(--teal-mid); }
+
+  .settings-panel { display:none; }
+  .settings-panel.active { display:block; }
+
+  .sec-label { font-family:'DM Mono',monospace; font-size:0.68rem; color:var(--teal); letter-spacing:2px; text-transform:uppercase; margin-bottom:0.4rem; }
+  .sec-title { font-family:'Syne',sans-serif; font-weight:700; font-size:1.1rem; color:var(--white); margin-bottom:0.3rem; }
+  .sec-desc { font-size:0.83rem; color:var(--slate); margin-bottom:1.2rem; line-height:1.6; }
+
+  .scard { background:var(--card); border:1px solid var(--border); border-radius:10px; overflow:hidden; margin-bottom:1.2rem; }
+  .srow {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0.9rem 1.2rem; border-bottom:1px solid var(--border);
+    gap:1rem;
+  }
+  .srow:last-child { border-bottom:none; }
+  .srow-info { flex:1; }
+  .srow-label { font-weight:600; font-size:0.85rem; color:var(--white); margin-bottom:0.15rem; }
+  .srow-desc { font-size:0.76rem; color:var(--slate); }
+
+  .toggle {
+    width:40px; height:22px; background:var(--border); border-radius:100px;
+    position:relative; cursor:pointer; transition:background 0.2s; flex-shrink:0;
+  }
+  .toggle.on { background:var(--teal); }
+  .toggle::after {
+    content:''; position:absolute; top:3px; left:3px;
+    width:16px; height:16px; border-radius:50%; background:white; transition:left 0.2s;
+  }
+  .toggle.on::after { left:21px; }
+
+  .input-field {
+    background:var(--deep); border:1px solid var(--border); color:var(--light);
+    padding:0.4rem 0.75rem; border-radius:5px; font-size:0.82rem;
+    font-family:'Nunito Sans',sans-serif; margin-top:0.4rem;
+  }
+  .input-field:focus { outline:none; border-color:var(--teal); }
+  select.input-field { cursor:pointer; }
+
+  .status-pill {
+    font-family:'DM Mono',monospace; font-size:0.65rem; font-weight:700;
+    padding:3px 10px; border-radius:100px; letter-spacing:0.8px; text-transform:uppercase; flex-shrink:0;
+  }
+  .pill-pending { background:var(--amber-dim); color:var(--amber); }
+  .pill-confirmed { background:var(--teal-dim); color:var(--teal); }
+  .pill-dual { background:var(--blue-dim); color:#7eb3ff; }
+
+  .role-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:1rem; margin-bottom:1.2rem; }
+  .role-card { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:1rem; }
+  .role-name { font-family:'Syne',sans-serif; font-weight:700; font-size:0.88rem; color:var(--white); margin-bottom:0.3rem; }
+  .role-desc { font-size:0.75rem; color:var(--slate); margin-bottom:0.7rem; line-height:1.5; }
+  .perm { font-size:0.75rem; display:flex; align-items:center; gap:0.4rem; padding:0.15rem 0; }
+  .perm-yes { color:var(--green); }
+  .perm-no { color:var(--red); }
+
+  .audit-table { width:100%; border-collapse:collapse; }
+  .audit-table th {
+    font-family:'DM Mono',monospace; font-size:0.66rem; color:var(--teal);
+    letter-spacing:1px; text-transform:uppercase; padding:0.7rem 1rem; text-align:left;
+    border-bottom:2px solid var(--border);
+  }
+  .audit-table td { padding:0.75rem 1rem; border-bottom:1px solid var(--border); font-size:0.8rem; color:var(--light); }
+  .audit-table tr:hover td { background:var(--teal-dim); }
+  .atype { font-size:0.68rem; padding:2px 8px; border-radius:4px; }
+
+  .btn-primary { background:var(--teal); color:var(--navy); padding:0.5rem 1.3rem; border-radius:5px; font-weight:700; font-size:0.84rem; border:none; cursor:pointer; }
+  .btn-primary:hover { opacity:0.85; }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--slate); padding:0.5rem 1.2rem; border-radius:5px; font-size:0.84rem; cursor:pointer; }
+  .btn-outline:hover { border-color:var(--teal); color:var(--teal); }
+
+  .save-bar {
+    position:fixed; bottom:0; left:0; right:0;
+    background:var(--deep); border-top:1px solid var(--border);
+    padding:0.9rem 2rem; display:flex; justify-content:flex-end; gap:0.8rem; z-index:50;
+  }
+
+  @media(max-width:768px){
+    .settings-layout { grid-template-columns:1fr; }
+    .settings-nav { flex-direction:row; flex-wrap:wrap; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="util-nav">
+  <div class="util-nav-top">
+    <div class="util-brand">
+      <span style="font-size:1.2rem">🏛️</span>
+      <span class="util-brand-name">Pinellas County Utilities</span>
+    </div>
+    <span class="util-admin">Admin: System Manager</span>
+  </div>
+  <div class="util-tabs">
+    <a href="index.html" class="util-tab">Overview</a>
+    <a href="customers.html" class="util-tab">Customers</a>
+    <a href="analytics.html" class="util-tab">Analytics</a>
+    <a href="ordinances.html" class="util-tab">Ordinances</a>
+    <a href="alerts.html" class="util-tab">Alerts</a>
+    <a href="settings.html" class="util-tab active">Settings</a>
+  </div>
+</nav>
+
+<div class="page">
+  <a href="index.html" class="back-link">← Back to Dashboard</a>
+  <div class="page-title">System Settings</div>
+
+  <div class="settings-layout">
+
+    <div class="settings-nav">
+      <button class="snav-item active" onclick="show('integration',this)">🔌 Integration</button>
+      <button class="snav-item" onclick="show('compliance',this)">📋 Compliance Rules</button>
+      <button class="snav-item" onclick="show('users',this)">👤 Users & Access</button>
+      <button class="snav-item" onclick="show('notifications',this)">🔔 Notifications</button>
+      <button class="snav-item" onclick="show('data',this)">🗄️ Data & Retention</button>
+      <button class="snav-item" onclick="show('audit',this)">🔍 Audit Log</button>
+      <button class="snav-item" onclick="show('security',this)">🔐 Security</button>
+    </div>
+
+    <div>
+
+      <!-- INTEGRATION -->
+      <div class="settings-panel active" id="panel-integration">
+        <div class="sec-label">Integration</div>
+        <div class="sec-title">System Connections & Data Feeds</div>
+        <div class="sec-desc">Configure AMI, GIS, Cityworks, and SAP integration parameters. Pending items require confirmation from respective County teams before pilot launch.</div>
+        <div class="scard">
+          <div class="srow">
+            <div class="srow-info">
+              <div class="srow-label">AMI Ingestion Method</div>
+              <div class="srow-desc">Confirm with Badger Meter/AMI team — REST API preferred</div>
+              <select class="input-field" style="width:210px"><option>REST API (Preferred)</option><option>Secure CSV Drop (SFTP)</option><option>JSON/XML Burst Mode</option></select>
+            </div>
+            <span class="status-pill pill-pending">Pending</span>
+          </div>
+          <div class="srow">
+            <div class="srow-info">
+              <div class="srow-label">AMI Ingestion Schedule</div>
+              <div class="srow-desc">Daily pull time — default 02:00 EST</div>
+              <input class="input-field" value="02:00 EST daily" style="width:180px">
+            </div>
+            <span class="status-pill pill-confirmed">Confirmed</span>
+          </div>
+          <div class="srow">
+            <div class="srow-info">
+              <div class="srow-label">GIS Parcel Delivery Method</div>
+              <div class="srow-desc">Confirm with GIS team — REST feature service or file export</div>
+              <select class="input-field" style="width:210px"><option>REST Feature Service</option><option>GeoJSON File Export</option><option>Shapefile</option></select>
+            </div>
+            <span class="status-pill pill-pending">Pending</span>
+          </div>
+          <div class="srow">
+            <div class="srow-info">
+              <div class="srow-label">Cityworks SR API</div>
+              <div class="srow-desc">Confirm REST API access with Shane — SR template ID required</div>
+              <input class="input-field" value="Pending — confirm with Shane" style="width:280px">
+            </div>
+            <span class="status-pill pill-pending">Pending</span>
+          </div>
+          <div class="srow">
+            <div class="srow-info">
+              <div class="srow-label">SAP Billing — Read-Only Access</div>
+              <div class="srow-desc">Account, meter ID, rate code — confirm with IT/Finance</div>
+              <input class="input-field" value="Pending — confirm with IT/Finance Systems" style="width:280px">
+            </div>
+            <span class="status-pill pill-pending">Pending</span>
+          </div>
+          <div class="srow">
+            <div class="srow-info">
+              <div class="srow-label">NOAA Weather API</div>
+              <div class="srow-desc">Auto-suppress alerts when rainfall ≥ 0.5" in 24 hrs</div>
+            </div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="srow">
+            <div class="srow-info">
+              <div class="srow-label">SeeClickFix Citizen Reporting</div>
+              <div class="srow-desc">Inbound complaints enriched with AMI corroboration before SR escalation</div>
+            </div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COMPLIANCE RULES -->
+      <div class="settings-panel" id="panel-compliance">
+        <div class="sec-label">Compliance Rules</div>
+        <div class="sec-title">Detection Thresholds & Enforcement Logic</div>
+        <div class="sec-desc">All threshold changes require admin authorization and are written to the audit log.</div>
+        <div class="scard">
+          <div class="srow">
+            <div class="srow-info">
+              <div class="srow-label">Min GPM Threshold — Irrigation Detection</div>
+              <div class="srow-desc">Sustained flow above this rate for 2+ intervals = violation candidate</div>
+              <input class="input-field" value="0.5 GPM" style="width:110px">
+            </div>
+          </div>
+          <div class="srow">
+            <div class="srow-info">
+              <div class="srow-label">Consecutive Intervals for Violation Candidate</div>
+              <div class="srow-desc">Minimum qualifying intervals before case is created</div>
+              <input class="input-field" value="2 intervals" style="width:110px">
+            </div>
+          </div>
+          <div class="srow">
+            <div class="srow-info">
+              <div class="srow-label">Leak Detection — Continuous Flow Threshold</div>
+              <div class="srow-desc">Hours of uninterrupted low-flow before leak alert fires</div>
+              <input class="input-field" value="4 hours" style="width:110px">
+            </div>
+          </div>
+          <div class="srow">
+            <div class="srow-info">
+              <div class="srow-label">Auto-SR Confidence Threshold</div>
+              <div class="srow-desc">Minimum score to auto-generate Cityworks SR without manual review</div>
+              <input class="input-field" value="85%" style="width:110px">
+            </div>
+          </div>
+          <div class="srow">
+            <div class="srow-info">
+              <div class="srow-label">False-Positive Alert Cap</div>
+              <div class="srow-desc">Triggers review cycle if exceeded — pilot target ≤ 8%</div>
+              <input class="input-field" value="8%" style="width:110px">
+            </div>
+          </div>
+          <div class="srow">
+            <div class="srow-info">
+              <div class="srow-label">Outreach Response Window</div>
+              <div class="srow-desc">Days before case auto-escalates from outreach to enforcement lane</div>
+              <input class="input-field" value="14 days" style="width:110px">
+            </div>
+          </div>
+          <div class="srow">
+            <div class="srow-info">
+              <div class="srow-label">SWFWMD Drought Phase — Current</div>
+              <div class="srow-desc">Requires admin dual-authorization — change is immediately audit-logged</div>
+              <select class="input-field" style="width:220px">
+                <option>Phase 1 — Moderate (Active)</option>
+                <option>Phase 2 — Severe</option>
+                <option>Phase 3 — Extreme</option>
+                <option>Phase 4 — Critical / Emergency</option>
+              </select>
+            </div>
+            <span class="status-pill pill-dual">Dual Auth</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- USERS -->
+      <div class="settings-panel" id="panel-users">
+        <div class="sec-label">Users & Access</div>
+        <div class="sec-title">Role-Based Access Control</div>
+        <div class="sec-desc">Four access tiers. All user additions and role changes are audit-logged with timestamp and authorizing admin.</div>
+        <div class="role-grid">
+          <div class="role-card">
+            <div class="role-name">🔑 Admin</div>
+            <div class="role-desc">Full access. Ordinance rules, drought activation, integrations, user management.</div>
+            <div class="perm perm-yes">✓ Rule changes</div>
+            <div class="perm perm-yes">✓ Drought activation</div>
+            <div class="perm perm-yes">✓ Integration config</div>
+            <div class="perm perm-yes">✓ User management</div>
+            <div class="perm perm-yes">✓ Audit log export</div>
+          </div>
+          <div class="role-card">
+            <div class="role-name">📊 Analyst</div>
+            <div class="role-desc">Work queue, outreach, case classification. Cannot change rules or issue citations.</div>
+            <div class="perm perm-yes">✓ View work queue</div>
+            <div class="perm perm-yes">✓ Initiate outreach</div>
+            <div class="perm perm-yes">✓ Case classification</div>
+            <div class="perm perm-no">✗ Rule changes</div>
+            <div class="perm perm-no">✗ Issue citations</div>
+          </div>
+          <div class="role-card">
+            <div class="role-name">⚖️ Enforcement</div>
+            <div class="role-desc">Escalated cases, citations, field inspection routing, dispute review.</div>
+            <div class="perm perm-yes">✓ Escalated cases</div>
+            <div class="perm perm-yes">✓ Issue citations</div>
+            <div class="perm perm-yes">✓ Field inspections</div>
+            <div class="perm perm-no">✗ Rule changes</div>
+            <div class="perm perm-no">✗ Integration config</div>
+          </div>
+          <div class="role-card">
+            <div class="role-name">👁️ Read-Only</div>
+            <div class="role-desc">Dashboard and report viewing only. No case actions or data changes.</div>
+            <div class="perm perm-yes">✓ View dashboards</div>
+            <div class="perm perm-yes">✓ Export reports</div>
+            <div class="perm perm-no">✗ Case actions</div>
+            <div class="perm perm-no">✗ Any data changes</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:0.8rem">
+          <button class="btn-primary">+ Add User</button>
+          <button class="btn-outline">Manage All Users</button>
+        </div>
+      </div>
+
+      <!-- NOTIFICATIONS -->
+      <div class="settings-panel" id="panel-notifications">
+        <div class="sec-label">Notifications</div>
+        <div class="sec-title">Alert Delivery & Customer Communications</div>
+        <div class="sec-desc">Configure notification channels for staff alerts and automated customer outreach.</div>
+        <div class="scard">
+          <div class="srow"><div class="srow-info"><div class="srow-label">Pre-Violation Push to Customer</div><div class="srow-desc">Push notification at 1st interval of restricted-hour flow</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          <div class="srow"><div class="srow-info"><div class="srow-label">Violation-Forming Warning (2nd Interval)</div><div class="srow-desc">Push + email when second consecutive qualifying interval detected</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          <div class="srow"><div class="srow-info"><div class="srow-label">Formal Notice — Email + Letter Queue</div><div class="srow-desc">Triggered when SR is confirmed — County letterhead template</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          <div class="srow"><div class="srow-info"><div class="srow-label">Drought Stage Mass Notification</div><div class="srow-desc">All active customers notified on phase change (10K+ simultaneous)</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          <div class="srow"><div class="srow-info"><div class="srow-label">Rain Event — Auto-Suppress Alerts</div><div class="srow-desc">Suppress violation flags when NOAA rainfall ≥ 0.5" in prior 24 hrs</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          <div class="srow"><div class="srow-info"><div class="srow-label">Leak Alert — Customer Notification</div><div class="srow-desc">Push + email when continuous flow exceeds leak detection threshold</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          <div class="srow"><div class="srow-info"><div class="srow-label">PWA Volunteer Pilot Notifications</div><div class="srow-desc">Engagement tracking for 50-person pilot cohort</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        </div>
+      </div>
+
+      <!-- DATA & RETENTION -->
+      <div class="settings-panel" id="panel-data">
+        <div class="sec-label">Data & Retention</div>
+        <div class="sec-title">Storage Policy & Hosting</div>
+        <div class="sec-desc">All ReUse360™ data hosted on Azure Government Cloud. County retains full ownership of all customer-specific records.</div>
+        <div class="scard">
+          <div class="srow">
+            <div class="srow-info"><div class="srow-label">Hosting Environment</div><div class="srow-desc">FedRAMP-aligned, US soil data residency only</div></div>
+            <span class="status-pill pill-confirmed">Azure Gov</span>
+          </div>
+          <div class="srow">
+            <div class="srow-info">
+              <div class="srow-label">Raw AMI Payload Retention</div>
+              <div class="srow-desc">Rolling window for raw interval data</div>
+              <select class="input-field" style="width:180px"><option>24 months (Default)</option><option>12 months</option><option>36 months</option></select>
+            </div>
+          </div>
+          <div class="srow">
+            <div class="srow-info">
+              <div class="srow-label">Case History Retention</div>
+              <div class="srow-desc">Enforcement and compliance case records</div>
+              <select class="input-field" style="width:180px"><option>7 years (Chapter 119)</option><option>5 years</option><option>10 years</option></select>
+            </div>
+          </div>
+          <div class="srow"><div class="srow-info"><div class="srow-label">Encryption in Transit (TLS 1.3)</div><div class="srow-desc">Enforced on all AMI feeds and API connections</div></div><div class="toggle on"></div></div>
+          <div class="srow"><div class="srow-info"><div class="srow-label">Encryption at Rest (AES-256)</div><div class="srow-desc">All stored customer and compliance data</div></div><div class="toggle on"></div></div>
+          <div class="srow"><div class="srow-info"><div class="srow-label">PII Minimization</div><div class="srow-desc">Store only identifiers required for workflow execution</div></div><div class="toggle on"></div></div>
+        </div>
+      </div>
+
+      <!-- AUDIT LOG -->
+      <div class="settings-panel" id="panel-audit">
+        <div class="sec-label">Audit Log</div>
+        <div class="sec-title">System Action History</div>
+        <div class="sec-desc">Tamper-evident log of all ingestion events, rule changes, user actions, and SR generation. Chapter 119 export available.</div>
+        <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
+          <button class="btn-primary">Export Chapter 119 Package</button>
+        </div>
+        <div class="scard">
+          <table class="audit-table">
+            <thead><tr><th>Timestamp</th><th>User</th><th>Type</th><th>Detail</th><th>Result</th></tr></thead>
+            <tbody>
+              <tr>
+                <td style="font-family:'DM Mono',monospace;font-size:0.74rem">2026-01-22 02:18</td>
+                <td>SYSTEM</td>
+                <td><span class="atype" style="background:var(--teal-dim);color:var(--teal)">Ingestion</span></td>
+                <td style="color:var(--slate);font-size:0.78rem">AMI daily payload — 1,247 records processed</td>
+                <td style="color:var(--green);font-size:0.78rem">✓ Success</td>
+              </tr>
+              <tr>
+                <td style="font-family:'DM Mono',monospace;font-size:0.74rem">2026-01-21 14:32</td>
+                <td>Chynna Cherry</td>
+                <td><span class="atype" style="background:var(--amber-dim);color:var(--amber)">Case Action</span></td>
+                <td style="color:var(--slate);font-size:0.78rem">Confirmed SR — PCU-23456 wrong-day violation</td>
+                <td style="color:var(--green);font-size:0.78rem">✓ SR Created</td>
+              </tr>
+              <tr>
+                <td style="font-family:'DM Mono',monospace;font-size:0.74rem">2026-01-21 09:15</td>
+                <td>Ian Shollenberger</td>
+                <td><span class="atype" style="background:var(--blue-dim);color:#7eb3ff">Queue Review</span></td>
+                <td style="color:var(--slate);font-size:0.78rem">Classified 8 cases — 3 education, 4 warning, 1 enforcement</td>
+                <td style="color:var(--green);font-size:0.78rem">✓ Logged</td>
+              </tr>
+              <tr>
+                <td style="font-family:'DM Mono',monospace;font-size:0.74rem">2026-01-20 16:04</td>
+                <td>System Manager</td>
+                <td><span class="atype" style="background:var(--red-dim);color:var(--red)">Rule Change</span></td>
+                <td style="color:var(--slate);font-size:0.78rem">Added ORD 82.5 — Water Waste Prohibition 2025</td>
+                <td style="color:var(--green);font-size:0.78rem">✓ Dual-Auth OK</td>
+              </tr>
+              <tr>
+                <td style="font-family:'DM Mono',monospace;font-size:0.74rem">2026-01-19 02:00</td>
+                <td>SYSTEM</td>
+                <td><span class="atype" style="background:var(--teal-dim);color:var(--teal)">Ingestion</span></td>
+                <td style="color:var(--slate);font-size:0.78rem">AMI daily payload — 1,247 records processed</td>
+                <td style="color:var(--green);font-size:0.78rem">✓ Success</td>
+              </tr>
+              <tr>
+                <td style="font-family:'DM Mono',monospace;font-size:0.74rem">2026-01-18 11:22</td>
+                <td>Chynna Cherry</td>
+                <td><span class="atype" style="background:var(--amber-dim);color:var(--amber)">Outreach</span></td>
+                <td style="color:var(--slate);font-size:0.78rem">Education notice sent — 5 parcels BCH-3 overwatering</td>
+                <td style="color:var(--green);font-size:0.78rem">✓ Delivered</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SECURITY -->
+      <div class="settings-panel" id="panel-security">
+        <div class="sec-label">Security</div>
+        <div class="sec-title">Authentication & Access Controls</div>
+        <div class="sec-desc">NIST 800-53 Moderate target baseline. All security configuration changes require admin authorization.</div>
+        <div class="scard">
+          <div class="srow">
+            <div class="srow-info"><div class="srow-label">Single Sign-On (SSO)</div><div class="srow-desc">County SSO integration — confirm authentication method with IT</div></div>
+            <span class="status-pill pill-pending">Confirm with IT</span>
+          </div>
+          <div class="srow"><div class="srow-info"><div class="srow-label">Multi-Factor Authentication (MFA)</div><div class="srow-desc">Required for all admin and enforcement roles</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          <div class="srow"><div class="srow-info"><div class="srow-label">Session Timeout</div><div class="srow-desc">Auto-logout after inactivity</div><select class="input-field" style="width:150px"><option>30 minutes</option><option>60 minutes</option><option>15 minutes</option></select></div></div>
+          <div class="srow"><div class="srow-info"><div class="srow-label">Audit Log Tamper Protection</div><div class="srow-desc">Write-once audit trail — no deletions permitted</div></div><div class="toggle on"></div></div>
+          <div class="srow"><div class="srow-info"><div class="srow-label">Breach Notification — 72hr Requirement</div><div class="srow-desc">Aligns with §501.171 F.S. and DPA terms</div></div><div class="toggle on"></div></div>
+          <div class="srow"><div class="srow-info"><div class="srow-label">Proprietary Algorithm — Trade Secret</div><div class="srow-desc">Scoring logic designated under §119.0715 F.S.</div></div><span class="status-pill pill-confirmed">Protected</span></div>
+          <div class="srow">
+            <div class="srow-info"><div class="srow-label">Vulnerability Scanning</div><div class="srow-desc">Scheduled assessment frequency</div><select class="input-field" style="width:180px"><option>Quarterly (Default)</option><option>Monthly</option><option>Semi-Annual</option></select></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="save-bar">
+  <button class="btn-outline">Cancel</button>
+  <button class="btn-primary">Save Settings</button>
+</div>
+
+<script>
+function show(id, btn) {
+  document.querySelectorAll('.settings-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.snav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ReUse360 Customer Portal - Track your water usage and optimize irrigation">
+  <title>Customer Dashboard - ReUse360</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../css/main.css">
+  <link rel="manifest" href="../manifest.json">
+  <meta name="theme-color" content="#0ea5e9">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { background: #f0f4f8; }
+    .app-header { background: linear-gradient(135deg, #0ea5e9, #1e40af); color: white; padding: 1.5rem 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .app-nav { display: flex; justify-content: space-between; align-items: center; }
+    .app-title { font-size: 1.5rem; font-weight: 700; color: white; }
+    .app-user { display: flex; align-items: center; gap: 1rem; }
+    .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; }
+    .dashboard { padding: 2rem 0; }
+    .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+    .stat-card { background: white; padding: 1.5rem; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .stat-label { color: #64748b; font-size: 0.875rem; margin-bottom: 0.5rem; }
+    .stat-value { font-size: 2rem; font-weight: 700; color: #1e293b; }
+    .stat-change { font-size: 0.875rem; margin-top: 0.5rem; }
+    .stat-change.positive { color: #10b981; }
+    .stat-change.negative { color: #ef4444; }
+    .chart-card { background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 1.5rem; }
+    .chart-card h3 { margin-bottom: 1rem; }
+    .quick-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 2rem 0; }
+    .action-btn { background: white; padding: 1.5rem; border-radius: 1rem; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: all 0.3s; cursor: pointer; text-decoration: none; color: inherit; display: block; }
+    .action-btn:hover { transform: translateY(-4px); box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
+    .action-icon { font-size: 2rem; color: #0ea5e9; margin-bottom: 0.75rem; }
+    .alerts-section { margin-top: 2rem; }
+    .alert-item { background: white; padding: 1rem 1.5rem; border-radius: 0.75rem; margin-bottom: 1rem; border-left: 4px solid #0ea5e9; display: flex; justify-content: space-between; align-items: center; }
+    .alert-item.warning { border-left-color: #f59e0b; }
+    .alert-item.danger { border-left-color: #ef4444; }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="container app-nav">
+      <div class="app-title"><i class="fas fa-tint"></i> ReUse360</div>
+      <div class="app-user">
+        <span id="userName">Loading...</span>
+        <div class="user-avatar"><i class="fas fa-user"></i></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="dashboard">
+    <div class="container">
+      <div style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 1rem 1.5rem; border-radius: 0.75rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 1rem;">
+        <i class="fas fa-info-circle" style="font-size: 1.5rem;"></i>
+        <div>
+          <strong>💡 Need help navigating?</strong> Click the buttons below to access Water-Saving Tips, Compliance, and more. 
+          <a href="../NAVIGATION_GUIDE.html" style="color: white; text-decoration: underline; margin-left: 0.5rem;">View Full Site Map</a>
+        </div>
+      </div>
+      <h1 style="margin-bottom: 2rem;">Water Usage Dashboard</h1>
+      
+      <div class="dashboard-grid">
+        <div class="stat-card">
+          <div class="stat-label">Today's Usage</div>
+          <div class="stat-value" id="todayUsage">-</div>
+          <div class="stat-change positive" id="todayChange"><i class="fas fa-arrow-down"></i> 12% vs yesterday</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">This Month</div>
+          <div class="stat-value" id="monthUsage">-</div>
+          <div class="stat-change positive" id="monthChange"><i class="fas fa-arrow-down"></i> 15% vs last month</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Efficiency Score</div>
+          <div class="stat-value" id="efficiencyScore">-</div>
+          <div class="stat-change positive"><i class="fas fa-arrow-up"></i> Excellent</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Cost Savings</div>
+          <div class="stat-value" id="costSavings">-</div>
+          <div class="stat-change positive"><i class="fas fa-dollar-sign"></i> vs avg customer</div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <h3>30-Day Water Usage Trend</h3>
+        <canvas id="usageChart" style="height: 300px;"></canvas>
+      </div>
+
+      <div class="quick-actions">
+        <a href="schedule.html" class="action-btn">
+          <div class="action-icon"><i class="fas fa-calendar-alt"></i></div>
+          <strong>Irrigation Schedule</strong>
+          <p style="color: #64748b; font-size: 0.875rem; margin-top: 0.5rem;">Manage watering times</p>
+        </a>
+        <a href="compliance.html" class="action-btn">
+          <div class="action-icon"><i class="fas fa-balance-scale"></i></div>
+          <strong>Compliance & Ordinances</strong>
+          <p style="color: #64748b; font-size: 0.875rem; margin-top: 0.5rem;">View regulations & rules</p>
+        </a>
+        <a href="tips.html" class="action-btn">
+          <div class="action-icon"><i class="fas fa-lightbulb"></i></div>
+          <strong>Water-Saving Tips</strong>
+          <p style="color: #64748b; font-size: 0.875rem; margin-top: 0.5rem;">Personalized recommendations</p>
+        </a>
+        <a href="#" onclick="showZoneInfo(); return false;" class="action-btn">
+          <div class="action-icon"><i class="fas fa-map-marked-alt"></i></div>
+          <strong>My Zone Info</strong>
+          <p style="color: #64748b; font-size: 0.875rem; margin-top: 0.5rem;">Restrictions & schedules</p>
+        </a>
+      </div>
+
+      <div class="alerts-section">
+        <h2 style="margin-bottom: 1rem;">Recent Alerts</h2>
+        <div id="alertsContainer">
+          <div class="alert-item">
+            <div><strong>Great job!</strong> You've saved 15% water this month compared to last month.</div>
+            <i class="fas fa-check-circle" style="color: #10b981; font-size: 1.5rem;"></i>
+          </div>
+          <div class="alert-item warning">
+            <div><strong>Reminder:</strong> Your next allowed watering day is Monday (Zone restrictions apply).</div>
+            <i class="fas fa-info-circle" style="color: #f59e0b; font-size: 1.5rem;"></i>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: 3rem; padding: 2rem; background: white; border-radius: 1rem;">
+        <p style="color: #64748b; margin-bottom: 1rem;">Need help or have questions?</p>
+        <a href="../contact.html" class="btn btn-primary">Contact Support</a>
+        <a href="../index.html" class="btn btn-outline" style="margin-left: 1rem;">Back to Home</a>
+      </div>
+    </div>
+  </main>
+
+  <script src="../js/main.js"></script>
+  <script src="../js/api.js"></script>
+  
+  <!-- 🤖 IBM watsonx Assistant Integration -->
+  <!-- See CHATBOT_INTEGRATION.md for setup instructions -->
+  <!-- The chatbot can answer questions about usage, schedules, and ordinances -->
+  
+  <script>
+    // Initialize dashboard
+    async function initDashboard() {
+      // Get current user (demo mode)
+      const user = ReUse360Utils.getCurrentUser();
+      document.getElementById('userName').textContent = user.name;
+
+      // Generate sample data
+      const usageData = ReUse360Utils.generateSampleUsageData(30);
+      const stats = ReUse360Utils.calculateStats(usageData);
+
+      // Update stats
+      document.getElementById('todayUsage').textContent = `${Math.round(usageData[usageData.length - 1].gallons)} gal`;
+      document.getElementById('monthUsage').textContent = `${ReUse360Utils.formatNumber(Math.round(stats.total))} gal`;
+      document.getElementById('efficiencyScore').textContent = '92';
+      document.getElementById('costSavings').textContent = '$47';
+
+      // Create chart
+      const ctx = document.getElementById('usageChart');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: usageData.map(d => new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })),
+          datasets: [{
+            label: 'Daily Usage (gallons)',
+            data: usageData.map(d => d.gallons),
+            borderColor: '#0ea5e9',
+            backgroundColor: 'rgba(14, 165, 233, 0.1)',
+            tension: 0.4,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (context) => `${Math.round(context.parsed.y)} gallons`
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: (value) => `${value} gal`
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function showZoneInfo() {
+      const user = ReUse360Utils.getCurrentUser();
+      alert(`Zone: ${user.zone_id}\nWatering Days: Monday & Thursday\nRestriction Level: None\nCurrent Pressure: Normal`);
+    }
+
+    function downloadReport() {
+      ReUse360Utils.showNotification('Report download started...', 'success');
+    }
+
+    // Initialize on load
+    document.addEventListener('DOMContentLoaded', initDashboard);
+  </script>
+</body>
+</html>

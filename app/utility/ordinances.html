@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ordinance Management - ReUse360</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../../css/main.css">
+  <style>
+    body { background: #f0f4f8; }
+    .utility-header { background: linear-gradient(135deg, #1e40af, #0ea5e9); color: white; padding: 1.5rem 0; }
+    .nav-tabs { display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap; }
+    .nav-tab { padding: 0.75rem 1.5rem; background: rgba(255,255,255,0.1); border-radius: 0.5rem 0.5rem 0 0; color: white; cursor: pointer; transition: all 0.3s; text-decoration: none; white-space: nowrap; }
+    .nav-tab:hover { background: rgba(255,255,255,0.2); }
+    .nav-tab.active { background: #f0f4f8; color: #1e40af; }
+    .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .stat-box { background: white; padding: 1.5rem; border-radius: 0.75rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .stat-value { font-size: 2rem; font-weight: 700; margin: 0.5rem 0; }
+    .ordinance-table { background: white; border-radius: 1rem; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 1.5rem; }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: #f8fafc; padding: 1rem; text-align: left; font-weight: 600; color: #475569; border-bottom: 2px solid #e2e8f0; }
+    td { padding: 1rem; border-bottom: 1px solid #e2e8f0; }
+    tr:hover { background: #f8fafc; }
+    .code-badge { background: #e0f2fe; color: #075985; padding: 0.25rem 0.75rem; border-radius: 0.5rem; font-weight: 600; font-size: 0.875rem; font-family: monospace; }
+    .violation-tracker { background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 1.5rem; }
+  </style>
+</head>
+<body>
+  <header class="utility-header">
+    <div class="container">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+        <h1 style="color: white; margin: 0;"><i class="fas fa-building"></i> Pinellas County Utilities</h1>
+        <div style="color: rgba(255,255,255,0.9);">Admin: System Manager</div>
+      </div>
+      <div class="nav-tabs">
+        <a href="index.html" class="nav-tab">Overview</a>
+        <a href="customers.html" class="nav-tab">Customers</a>
+        <a href="analytics.html" class="nav-tab">Analytics</a>
+        <div class="nav-tab active">Ordinances</div>
+        <div class="nav-tab">Alerts</div>
+        <div class="nav-tab">Settings</div>
+      </div>
+    </div>
+  </header>
+
+  <main style="padding: 2rem 0;">
+    <div class="container">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <h2 style="margin: 0;">Ordinance & Compliance Management</h2>
+        <button class="btn btn-primary" onclick="alert('Add new ordinance feature')"><i class="fas fa-plus"></i> Add Ordinance</button>
+      </div>
+
+      <!-- Compliance Statistics -->
+      <div class="stats-row">
+        <div class="stat-box">
+          <div style="color: #64748b; font-size: 0.875rem; margin-bottom: 0.5rem;">Active Ordinances</div>
+          <div class="stat-value" style="color: #0ea5e9;">8</div>
+          <div style="font-size: 0.875rem; color: #10b981;"><i class="fas fa-check-circle"></i> All enforced (3 new for 2025)</div>
+        </div>
+        <div class="stat-box">
+          <div style="color: #64748b; font-size: 0.875rem; margin-bottom: 0.5rem;">Compliant Customers</div>
+          <div class="stat-value" style="color: #10b981;">1,189</div>
+          <div style="font-size: 0.875rem; color: #64748b;">95.3% compliance rate</div>
+        </div>
+        <div class="stat-box">
+          <div style="color: #64748b; font-size: 0.875rem; margin-bottom: 0.5rem;">Active Violations</div>
+          <div class="stat-value" style="color: #f59e0b;">58</div>
+          <div style="font-size: 0.875rem; color: #64748b;">4.7% under review</div>
+        </div>
+        <div class="stat-box">
+          <div style="color: #64748b; font-size: 0.875rem; margin-bottom: 0.5rem;">Penalties Issued (YTD)</div>
+          <div class="stat-value" style="color: #ef4444;">$47,500</div>
+          <div style="font-size: 0.875rem; color: #64748b;">124 violations total</div>
+        </div>
+      </div>
+
+      <!-- Active Ordinances Table -->
+      <h3 style="margin-bottom: 1rem;">Active Ordinances</h3>
+      <div class="ordinance-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Title</th>
+              <th>Category</th>
+              <th>Restriction Level</th>
+              <th>Penalty</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="code-badge">82.2-2</span></td>
+              <td><strong>Year-Round Schedule - Odd Addresses</strong><br><span style="font-size: 0.875rem; color: #64748b;">Wed & Sat watering only</span></td>
+              <td><span class="badge badge-primary">Irrigation Schedule</span></td>
+              <td><span class="badge" style="background: #fed7aa; color: #92400e;">Phase 1</span></td>
+              <td>$500</td>
+              <td><span class="badge badge-success">Active</span></td>
+              <td>
+                <button class="btn btn-sm" style="padding: 0.25rem 0.75rem;" onclick="viewOrdinance('82.2-2')"><i class="fas fa-eye"></i></button>
+                <button class="btn btn-sm" style="padding: 0.25rem 0.75rem; margin-left: 0.5rem;" onclick="editOrdinance('82.2-2')"><i class="fas fa-edit"></i></button>
+              </td>
+            </tr>
+            <tr>
+              <td><span class="code-badge">82.2-3</span></td>
+              <td><strong>Year-Round Schedule - Even Addresses</strong><br><span style="font-size: 0.875rem; color: #64748b;">Thu & Sun watering only</span></td>
+              <td><span class="badge badge-primary">Irrigation Schedule</span></td>
+              <td><span class="badge" style="background: #fed7aa; color: #92400e;">Phase 1</span></td>
+              <td>$500</td>
+              <td><span class="badge badge-success">Active</span></td>
+              <td>
+                <button class="btn btn-sm" style="padding: 0.25rem 0.75rem;"><i class="fas fa-eye"></i></button>
+                <button class="btn btn-sm" style="padding: 0.25rem 0.75rem; margin-left: 0.5rem;"><i class="fas fa-edit"></i></button>
+              </td>
+            </tr>
+            <tr>
+              <td><span class="code-badge">82.2</span></td>
+              <td><strong>Water Conservation Regulations</strong><br><span style="font-size: 0.875rem; color: #64748b;">Master ordinance</span></td>
+              <td><span class="badge" style="background: #dbeafe; color: #075985;">Water Restrictions</span></td>
+              <td><span class="badge" style="background: #fed7aa; color: #92400e;">Phase 1</span></td>
+              <td>Varies</td>
+              <td><span class="badge badge-success">Active</span></td>
+              <td>
+                <button class="btn btn-sm" style="padding: 0.25rem 0.75rem;"><i class="fas fa-eye"></i></button>
+                <button class="btn btn-sm" style="padding: 0.25rem 0.75rem; margin-left: 0.5rem;"><i class="fas fa-edit"></i></button>
+              </td>
+            </tr>
+            <tr style="background: #fef3c7;">
+              <td><span class="code-badge" style="background: #fee2e2; color: #991b1b;">82.3-1</span></td>
+              <td><strong>Emergency Drought - Phase 2</strong><br><span style="font-size: 0.875rem; color: #92400e;">1 day/week limit</span></td>
+              <td><span class="badge badge-danger">Emergency</span></td>
+              <td><span class="badge badge-danger">Phase 2</span></td>
+              <td>$1,000</td>
+              <td><span class="badge badge-warning">Standby</span></td>
+              <td>
+                <button class="btn btn-sm" style="padding: 0.25rem 0.75rem;"><i class="fas fa-eye"></i></button>
+                <button class="btn btn-sm btn-danger" style="padding: 0.25rem 0.75rem; margin-left: 0.5rem;"><i class="fas fa-power-off"></i> Activate</button>
+              </td>
+            </tr>
+            <tr>
+              <td><span class="code-badge" style="background: #ede9fe; color: #5b21b6;">82.4-1</span></td>
+              <td><strong>Reclaimed Water Requirements</strong><br><span style="font-size: 0.875rem; color: #64748b;">Purple signage & backflow</span></td>
+              <td><span class="badge" style="background: #dbeafe; color: #075985;">Water Restrictions</span></td>
+              <td><span class="badge" style="background: #e2e8f0; color: #475569;">None</span></td>
+              <td>$2,500</td>
+              <td><span class="badge badge-success">Active</span></td>
+              <td>
+                <button class="btn btn-sm" style="padding: 0.25rem 0.75rem;"><i class="fas fa-eye"></i></button>
+                <button class="btn btn-sm" style="padding: 0.25rem 0.75rem; margin-left: 0.5rem;"><i class="fas fa-edit"></i></button>
+              </td>
+            </tr>
+            <tr style="background: #f0fdf4;">
+              <td><span class="code-badge" style="background: #fee2e2; color: #991b1b;">82.1-5</span></td>
+              <td><strong>Water Waste Prohibition (NEW 2025)</strong><br><span style="font-size: 0.875rem; color: #64748b;">Unattended hoses, runoff, broken equipment</span></td>
+              <td><span class="badge" style="background: #dbeafe; color: #075985;">Water Restrictions</span></td>
+              <td><span class="badge" style="background: #fed7aa; color: #92400e;">Phase 1</span></td>
+              <td>$193</td>
+              <td><span class="badge badge-success">Active</span></td>
+              <td>
+                <button class="btn btn-sm" style="padding: 0.25rem 0.75rem;"><i class="fas fa-eye"></i></button>
+                <button class="btn btn-sm" style="padding: 0.25rem 0.75rem; margin-left: 0.5rem;"><i class="fas fa-edit"></i></button>
+              </td>
+            </tr>
+            <tr style="background: #f0fdf4;">
+              <td><span class="code-badge" style="background: #dbeafe; color: #075985;">82.5-1</span></td>
+              <td><strong>Rain Sensor Requirement (NEW 2025)</strong><br><span style="font-size: 0.875rem; color: #64748b;">Florida law - required on all automatic systems</span></td>
+              <td><span class="badge" style="background: #dbeafe; color: #075985;">Water Restrictions</span></td>
+              <td><span class="badge" style="background: #e2e8f0; color: #475569;">None</span></td>
+              <td>$193</td>
+              <td><span class="badge badge-success">Active</span></td>
+              <td>
+                <button class="btn btn-sm" style="padding: 0.25rem 0.75rem;"><i class="fas fa-eye"></i></button>
+                <button class="btn btn-sm" style="padding: 0.25rem 0.75rem; margin-left: 0.5rem;"><i class="fas fa-edit"></i></button>
+              </td>
+            </tr>
+            <tr style="background: #f0fdf4;">
+              <td><span class="code-badge" style="background: #fed7aa; color: #92400e;">82.6-1</span></td>
+              <td><strong>Chemical Application Guidelines (NEW 2025)</strong><br><span style="font-size: 0.875rem; color: #64748b;">24hr wait before watering, no rain expected</span></td>
+              <td><span class="badge" style="background: #dbeafe; color: #075985;">Water Restrictions</span></td>
+              <td><span class="badge" style="background: #e2e8f0; color: #475569;">None</span></td>
+              <td>$193</td>
+              <td><span class="badge badge-success">Active</span></td>
+              <td>
+                <button class="btn btn-sm" style="padding: 0.25rem 0.75rem;"><i class="fas fa-eye"></i></button>
+                <button class="btn btn-sm" style="padding: 0.25rem 0.75rem; margin-left: 0.5rem;"><i class="fas fa-edit"></i></button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Violation Tracker -->
+      <h3 style="margin-bottom: 1rem;">Recent Violations</h3>
+      <div class="violation-tracker">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Account</th>
+              <th>Ordinance</th>
+              <th>Violation Type</th>
+              <th>Status</th>
+              <th>Penalty</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Dec 20, 2025</td>
+              <td><strong>PCU-23456</strong><br>Johnson Residence</td>
+              <td><span class="code-badge">82.2-2</span></td>
+              <td>Wrong day irrigation</td>
+              <td><span class="badge badge-warning">Under Review</span></td>
+              <td>$500 (2nd)</td>
+              <td>
+                <button class="btn btn-sm btn-primary" style="padding: 0.25rem 0.75rem;">Review</button>
+              </td>
+            </tr>
+            <tr>
+              <td>Dec 19, 2025</td>
+              <td><strong>PCU-78901</strong><br>Martinez Property</td>
+              <td><span class="code-badge">82.2-3</span></td>
+              <td>Outside time window</td>
+              <td><span class="badge badge-success">Resolved</span></td>
+              <td>Warning (1st)</td>
+              <td>
+                <button class="btn btn-sm" style="padding: 0.25rem 0.75rem;"><i class="fas fa-eye"></i></button>
+              </td>
+            </tr>
+            <tr>
+              <td>Dec 18, 2025</td>
+              <td><strong>PCU-34567</strong><br>Smith Property</td>
+              <td><span class="code-badge">82.2-2</span></td>
+              <td>Consecutive day violation</td>
+              <td><span class="badge badge-warning">Pending Payment</span></td>
+              <td>$500 (2nd)</td>
+              <td>
+                <button class="btn btn-sm btn-primary" style="padding: 0.25rem 0.75rem;">Follow Up</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Quick Actions -->
+      <div style="background: white; padding: 2rem; border-radius: 1rem; margin-top: 2rem;">
+        <h3 style="margin-bottom: 1.5rem;">Quick Actions</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+          <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="alert('Activate emergency restrictions')">
+            <i class="fas fa-exclamation-triangle"></i> Activate Emergency Restrictions
+          </button>
+          <button class="btn btn-outline" style="width: 100%; justify-content: center;" onclick="alert('Generate compliance report')">
+            <i class="fas fa-file-download"></i> Generate Compliance Report
+          </button>
+          <button class="btn btn-outline" style="width: 100%; justify-content: center;" onclick="alert('Bulk customer notification')">
+            <i class="fas fa-envelope-bulk"></i> Send Bulk Notification
+          </button>
+          <button class="btn btn-outline" style="width: 100%; justify-content: center;" onclick="window.location.href='customers.html'">
+            <i class="fas fa-users"></i> View Non-Compliant Customers
+          </button>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: 2rem;">
+        <a href="index.html" class="btn btn-outline">Back to Dashboard</a>
+      </div>
+    </div>
+  </main>
+
+  <script src="../js/main.js"></script>
+  <script src="../js/api.js"></script>
+  <script>
+    function viewOrdinance(code) {
+      alert(`Viewing Ordinance ${code}\n\nThis would display:\n- Full ordinance text\n- Enforcement history\n- Affected customers\n- Compliance statistics`);
+    }
+
+    function editOrdinance(code) {
+      alert(`Editing Ordinance ${code}\n\nUtility admins can:\n- Update penalty amounts\n- Modify restriction levels\n- Change effective dates\n- Add/remove exemptions`);
+    }
+  </script>
+</body>
+</html>

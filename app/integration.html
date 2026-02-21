@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Integration Architecture — ReUse360</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0a1628;
+    --deep: #0d1f3c;
+    --teal: #00c9a7;
+    --teal-dim: #00c9a720;
+    --teal-mid: #00c9a750;
+    --blue: #1a6bff;
+    --blue-dim: #1a6bff20;
+    --amber: #f59e0b;
+    --amber-dim: #f59e0b20;
+    --red: #ef4444;
+    --red-dim: #ef444420;
+    --slate: #94a3b8;
+    --light: #e2e8f0;
+    --white: #f8fafc;
+    --border: #1e3a5f;
+    --card: #0f2545;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--navy);
+    color: var(--light);
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+    overflow-x: hidden;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(10,22,40,0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 2.5rem; height: 64px;
+  }
+  .nav-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800; font-size: 1.3rem;
+    color: var(--teal); letter-spacing: -0.5px;
+  }
+  .nav-links { display: flex; gap: 2rem; }
+  .nav-links a {
+    font-size: 0.85rem; font-weight: 500; color: var(--slate);
+    text-decoration: none; letter-spacing: 0.5px;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--teal); }
+  .nav-cta {
+    background: var(--teal); color: var(--navy);
+    padding: 0.45rem 1.2rem; border-radius: 4px;
+    font-size: 0.82rem; font-weight: 700;
+    text-decoration: none; letter-spacing: 0.3px;
+    transition: opacity 0.2s;
+  }
+  .nav-cta:hover { opacity: 0.85; }
+
+  /* HERO */
+  .hero {
+    margin-top: 64px;
+    padding: 5rem 2.5rem 3rem;
+    max-width: 1200px; margin-left: auto; margin-right: auto;
+    margin-top: 64px;
+  }
+  .hero-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem; font-weight: 500;
+    color: var(--teal); letter-spacing: 2px; text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800; font-size: clamp(2.2rem, 4vw, 3.2rem);
+    color: var(--white); line-height: 1.1;
+    margin-bottom: 1.2rem;
+  }
+  .hero h1 span { color: var(--teal); }
+  .hero p {
+    max-width: 640px; line-height: 1.8;
+    color: var(--slate); font-size: 1rem;
+  }
+
+  /* STATUS PILLS */
+  .status-bar {
+    display: flex; gap: 1rem; flex-wrap: wrap;
+    padding: 1.5rem 2.5rem;
+    max-width: 1200px; margin: 0 auto;
+    border-bottom: 1px solid var(--border);
+  }
+  .pill {
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 0.4rem 1rem; border-radius: 100px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem; font-weight: 500; letter-spacing: 0.5px;
+  }
+  .pill-dot { width: 7px; height: 7px; border-radius: 50%; }
+  .pill-live { background: var(--teal-dim); color: var(--teal); }
+  .pill-live .pill-dot { background: var(--teal); box-shadow: 0 0 6px var(--teal); animation: pulse 2s infinite; }
+  .pill-pending { background: var(--amber-dim); color: var(--amber); }
+  .pill-pending .pill-dot { background: var(--amber); }
+  .pill-roadmap { background: var(--blue-dim); color: #7eb3ff; }
+  .pill-roadmap .pill-dot { background: #7eb3ff; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /* MAIN CONTENT */
+  .content {
+    max-width: 1200px; margin: 0 auto;
+    padding: 3rem 2.5rem 6rem;
+  }
+
+  /* FLOW DIAGRAM */
+  .flow-section { margin-bottom: 4rem; }
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700; font-size: 1.4rem;
+    color: var(--white); margin-bottom: 0.5rem;
+  }
+  .section-sub {
+    font-size: 0.88rem; color: var(--slate);
+    margin-bottom: 2rem; line-height: 1.6;
+  }
+
+  .flow-diagram {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2.5rem;
+    overflow-x: auto;
+  }
+
+  .flow-row {
+    display: flex; align-items: center;
+    gap: 0; margin-bottom: 1.5rem;
+    min-width: 800px;
+  }
+  .flow-row:last-child { margin-bottom: 0; }
+
+  .flow-node {
+    display: flex; flex-direction: column;
+    align-items: center; text-align: center;
+    min-width: 130px; flex: 1;
+  }
+  .flow-box {
+    width: 110px; padding: 0.9rem 0.7rem;
+    border-radius: 8px; border: 1px solid;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem; font-weight: 500;
+    line-height: 1.4; letter-spacing: 0.3px;
+    position: relative;
+  }
+  .flow-box-label {
+    font-size: 0.65rem; color: var(--slate);
+    margin-top: 0.5rem; font-family: 'Inter', sans-serif;
+    font-weight: 400;
+  }
+  .flow-arrow {
+    flex: 0 0 40px; text-align: center;
+    font-size: 1.2rem; color: var(--border);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .flow-arrow-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem; color: var(--slate);
+    text-align: center; margin-top: 0.3rem;
+  }
+
+  /* Node colors */
+  .node-teal { background: var(--teal-dim); border-color: var(--teal-mid); color: var(--teal); }
+  .node-blue { background: var(--blue-dim); border-color: #1a6bff50; color: #7eb3ff; }
+  .node-amber { background: var(--amber-dim); border-color: #f59e0b50; color: var(--amber); }
+  .node-red { background: var(--red-dim); border-color: #ef444450; color: #fca5a5; }
+  .node-purple { background: #7c3aed20; border-color: #7c3aed50; color: #c4b5fd; }
+  .node-slate { background: #1e3a5f50; border-color: var(--border); color: var(--slate); }
+
+  .status-tag {
+    position: absolute; top: -9px; right: 6px;
+    font-size: 0.55rem; font-weight: 700;
+    padding: 1px 6px; border-radius: 100px;
+    letter-spacing: 0.8px; text-transform: uppercase;
+  }
+  .tag-live { background: var(--teal); color: var(--navy); }
+  .tag-pending { background: var(--amber); color: var(--navy); }
+  .tag-roadmap { background: #1a6bff; color: white; }
+
+  /* INTEGRATION TABLE */
+  .int-table {
+    width: 100%; border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+  .int-table thead tr {
+    border-bottom: 2px solid var(--border);
+  }
+  .int-table th {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem; font-weight: 500;
+    color: var(--teal); letter-spacing: 1px;
+    text-transform: uppercase; padding: 0.8rem 1rem;
+    text-align: left;
+  }
+  .int-table td {
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--light); vertical-align: top;
+    line-height: 1.5;
+  }
+  .int-table tr:hover td { background: var(--teal-dim); }
+  .int-table td:first-child {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem; font-weight: 500; color: var(--teal);
+  }
+
+  /* CARDS GRID */
+  .cards-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem; margin-top: 1.5rem;
+  }
+  .int-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1.5rem;
+    position: relative; overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .int-card:hover { border-color: var(--teal-mid); transform: translateY(-2px); }
+  .int-card::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
+  }
+  .card-teal::before { background: var(--teal); }
+  .card-amber::before { background: var(--amber); }
+  .card-blue::before { background: var(--blue); }
+  .card-purple::before { background: #7c3aed; }
+
+  .card-header {
+    display: flex; align-items: flex-start;
+    justify-content: space-between; margin-bottom: 1rem;
+  }
+  .card-icon {
+    width: 40px; height: 40px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+  }
+  .icon-teal { background: var(--teal-dim); }
+  .icon-amber { background: var(--amber-dim); }
+  .icon-blue { background: var(--blue-dim); }
+  .icon-purple { background: #7c3aed20; }
+
+  .card-status {
+    font-family: 'DM Mono', monospace; font-size: 0.65rem;
+    font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 100px;
+  }
+  .status-live { background: var(--teal-dim); color: var(--teal); }
+  .status-pending { background: var(--amber-dim); color: var(--amber); }
+  .status-roadmap { background: var(--blue-dim); color: #7eb3ff; }
+
+  .card-title {
+    font-family: 'Syne', sans-serif; font-weight: 700;
+    font-size: 1rem; color: var(--white); margin-bottom: 0.4rem;
+  }
+  .card-desc {
+    font-size: 0.82rem; color: var(--slate);
+    line-height: 1.6; margin-bottom: 1rem;
+  }
+  .card-fields {
+    display: flex; flex-wrap: wrap; gap: 0.4rem;
+  }
+  .field-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem; padding: 2px 8px;
+    background: #0a1628; border: 1px solid var(--border);
+    border-radius: 4px; color: var(--slate);
+  }
+
+  /* ACTION ITEMS */
+  .action-block {
+    background: var(--card); border: 1px solid var(--border);
+    border-left: 4px solid var(--amber);
+    border-radius: 0 10px 10px 0; padding: 1.5rem 2rem;
+    margin-top: 2rem;
+  }
+  .action-title {
+    font-family: 'Syne', sans-serif; font-weight: 700;
+    font-size: 1rem; color: var(--amber); margin-bottom: 1rem;
+  }
+  .action-list { list-style: none; }
+  .action-list li {
+    padding: 0.6rem 0; border-bottom: 1px solid var(--border);
+    font-size: 0.85rem; color: var(--light);
+    display: flex; align-items: flex-start; gap: 0.8rem; line-height: 1.5;
+  }
+  .action-list li:last-child { border-bottom: none; }
+  .action-list li::before {
+    content: '→'; color: var(--amber); font-weight: 700;
+    flex-shrink: 0; margin-top: 1px;
+  }
+  .action-who {
+    font-family: 'DM Mono', monospace; font-size: 0.7rem;
+    color: var(--amber); font-weight: 500;
+  }
+
+  /* DIVIDER */
+  .divider {
+    border: none; border-top: 1px solid var(--border);
+    margin: 3rem 0;
+  }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2rem 2.5rem;
+    display: flex; justify-content: space-between; align-items: center;
+    max-width: 1200px; margin: 0 auto;
+  }
+  footer p { font-size: 0.8rem; color: var(--slate); }
+
+  @media (max-width: 768px) {
+    .nav-links { display: none; }
+    .hero { padding: 3rem 1.5rem 2rem; }
+    .content { padding: 2rem 1.5rem 4rem; }
+    .status-bar { padding: 1rem 1.5rem; }
+    .flow-diagram { padding: 1.5rem 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">ReUse360™</div>
+  <div class="nav-links">
+    <a href="../index.html">Home</a>
+    <a href="../about.html">About</a>
+    <a href="../solutions.html">Solutions</a>
+    <a href="#" style="color:var(--teal)">Integration</a>
+    <a href="../contact.html">Contact</a>
+  </div>
+  <a href="../contact.html" class="nav-cta">Request Demo</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-label">Platform Architecture</div>
+  <h1>Integration <span>Architecture</span></h1>
+  <p>ReUse360™ is designed to connect natively with Pinellas County Utilities' existing technology stack — AMI/Beacon, GIS parcel data, Cityworks, and SAP — creating a unified conservation intelligence layer without replacing existing systems.</p>
+</div>
+
+<div class="status-bar">
+  <div class="pill pill-live"><div class="pill-dot"></div>Platform Live</div>
+  <div class="pill pill-pending"><div class="pill-dot"></div>Integration Pending — Confirmation Required</div>
+  <div class="pill pill-roadmap"><div class="pill-dot"></div>Roadmap — Phase 2</div>
+</div>
+
+<div class="content">
+
+  <!-- FLOW DIAGRAM -->
+  <div class="flow-section">
+    <div class="section-title">Data Flow Architecture</div>
+    <div class="section-sub">End-to-end data movement from AMI meter reads to enforcement action and customer notification.</div>
+
+    <div class="flow-diagram">
+
+      <div class="flow-row">
+        <div class="flow-node">
+          <div class="flow-box node-teal">
+            <span class="status-tag tag-pending">Pending</span>
+            Beacon AMI<br>15-min Intervals
+          </div>
+          <div class="flow-box-label">Badger Meter<br>REST API</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;flex:0 0 50px">
+          <div class="flow-arrow">→</div>
+          <div class="flow-arrow-label">API Pull</div>
+        </div>
+        <div class="flow-node">
+          <div class="flow-box node-blue">
+            <span class="status-tag tag-live">Live</span>
+            ReUse360™<br>Rules Engine
+          </div>
+          <div class="flow-box-label">Violation<br>Detection</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;flex:0 0 50px">
+          <div class="flow-arrow">→</div>
+          <div class="flow-arrow-label">SR Route</div>
+        </div>
+        <div class="flow-node">
+          <div class="flow-box node-amber">
+            <span class="status-tag tag-pending">Pending</span>
+            Cityworks<br>Service Request
+          </div>
+          <div class="flow-box-label">Auto / Manual<br>Validation</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;flex:0 0 50px">
+          <div class="flow-arrow">→</div>
+          <div class="flow-arrow-label">Notify</div>
+        </div>
+        <div class="flow-node">
+          <div class="flow-box node-teal">
+            <span class="status-tag tag-live">Live</span>
+            Customer<br>Notification
+          </div>
+          <div class="flow-box-label">Push / SMS<br>Email / Portal</div>
+        </div>
+      </div>
+
+      <div class="flow-row">
+        <div class="flow-node">
+          <div class="flow-box node-purple">
+            <span class="status-tag tag-pending">Pending</span>
+            GIS Parcel<br>Layer
+          </div>
+          <div class="flow-box-label">Zoning / HOA<br>Overlay</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;flex:0 0 50px">
+          <div class="flow-arrow">↑</div>
+          <div class="flow-arrow-label">Join Key</div>
+        </div>
+        <div class="flow-node">
+          <div class="flow-box node-blue">
+            <span class="status-tag tag-live">Live</span>
+            Parcel<br>Normalization
+          </div>
+          <div class="flow-box-label">Potable vs.<br>Reclaimed</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;flex:0 0 50px">
+          <div class="flow-arrow">↑</div>
+          <div class="flow-arrow-label">Reconcile</div>
+        </div>
+        <div class="flow-node">
+          <div class="flow-box node-slate">
+            <span class="status-tag tag-pending">Pending</span>
+            SAP Billing<br>Account Data
+          </div>
+          <div class="flow-box-label">Rate Code<br>Meter ID</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;flex:0 0 50px">
+          <div class="flow-arrow">→</div>
+          <div class="flow-arrow-label">Director KPI</div>
+        </div>
+        <div class="flow-node">
+          <div class="flow-box node-blue">
+            <span class="status-tag tag-live">Live</span>
+            Utility<br>Dashboard
+          </div>
+          <div class="flow-box-label">Compliance<br>Analytics</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- INTEGRATION CARDS -->
+  <div class="section-title">Integration Nodes</div>
+  <div class="section-sub">Each node represents a system connection required for full platform operation. Status reflects current deployment readiness.</div>
+
+  <div class="cards-grid">
+
+    <div class="int-card card-amber">
+      <div class="card-header">
+        <div class="card-icon icon-amber">📡</div>
+        <span class="card-status status-pending">Confirmation Pending</span>
+      </div>
+      <div class="card-title">Beacon AMI — Badger Meter</div>
+      <div class="card-desc">15-minute interval meter reads ingested via REST API. Enables real-time irrigation detection, flow signature analysis, and violation candidate scoring.</div>
+      <div class="card-fields">
+        <span class="field-tag">Meter ID</span>
+        <span class="field-tag">Interval Timestamp</span>
+        <span class="field-tag">Consumption GPM</span>
+        <span class="field-tag">REST API</span>
+        <span class="field-tag">OAuth2 Auth</span>
+      </div>
+    </div>
+
+    <div class="int-card card-purple">
+      <div class="card-header">
+        <div class="card-icon icon-purple">🗺️</div>
+        <span class="card-status status-pending">Confirmation Pending</span>
+      </div>
+      <div class="card-title">GIS Parcel Layer — Pinellas County</div>
+      <div class="card-desc">Parcel-level join key linking meter IDs to zoning, service address, and HOA boundary overlays. Enables schedule-aware compliance logic.</div>
+      <div class="card-fields">
+        <span class="field-tag">Parcel ID</span>
+        <span class="field-tag">Service Address</span>
+        <span class="field-tag">Zoning Code</span>
+        <span class="field-tag">HOA Boundary</span>
+        <span class="field-tag">GeoJSON / REST</span>
+      </div>
+    </div>
+
+    <div class="int-card card-amber">
+      <div class="card-header">
+        <div class="card-icon icon-amber">🔧</div>
+        <span class="card-status status-pending">Confirmation Pending</span>
+      </div>
+      <div class="card-title">Cityworks — Service Request Engine</div>
+      <div class="card-desc">Auto-generation of irrigation violation SRs via REST API with tiered confidence thresholds. High-confidence events auto-route; medium-confidence requires manual validation.</div>
+      <div class="card-fields">
+        <span class="field-tag">SR Template ID</span>
+        <span class="field-tag">Address</span>
+        <span class="field-tag">Violation Type</span>
+        <span class="field-tag">Timestamp</span>
+        <span class="field-tag">REST API</span>
+      </div>
+    </div>
+
+    <div class="int-card card-blue">
+      <div class="card-header">
+        <div class="card-icon icon-blue">💳</div>
+        <span class="card-status status-pending">Confirmation Pending</span>
+      </div>
+      <div class="card-title">SAP — Billing & Account Data</div>
+      <div class="card-desc">Read-only pull of customer account records for meter ID, service address, rate code, and billing cycle alignment. Supports reclaimed vs. potable normalization.</div>
+      <div class="card-fields">
+        <span class="field-tag">Account Number</span>
+        <span class="field-tag">Meter ID</span>
+        <span class="field-tag">Rate Code</span>
+        <span class="field-tag">Billing Cycle</span>
+        <span class="field-tag">Read-Only</span>
+      </div>
+    </div>
+
+    <div class="int-card card-teal">
+      <div class="card-header">
+        <div class="card-icon icon-teal">🌊</div>
+        <span class="card-status status-live">Platform Live</span>
+      </div>
+      <div class="card-title">SWFWMD Phase Overlay</div>
+      <div class="card-desc">40D-22 watering schedule logic applied by parcel and zoning. Phase I–IV restriction rules are admin-configurable with dual-authorization logging and full audit trail.</div>
+      <div class="card-fields">
+        <span class="field-tag">Phase I–IV Rules</span>
+        <span class="field-tag">Odd/Even Logic</span>
+        <span class="field-tag">Time Window</span>
+        <span class="field-tag">Admin Override Log</span>
+      </div>
+    </div>
+
+    <div class="int-card card-blue">
+      <div class="card-header">
+        <div class="card-icon icon-blue">🔔</div>
+        <span class="card-status status-live">Platform Live</span>
+      </div>
+      <div class="card-title">SeeClickFix — Citizen Reporting</div>
+      <div class="card-desc">Inbound citizen irrigation misuse reports enriched with AMI corroboration before Cityworks escalation. Prevents unsubstantiated complaint-driven enforcement.</div>
+      <div class="card-fields">
+        <span class="field-tag">Address Lookup</span>
+        <span class="field-tag">AMI Corroboration</span>
+        <span class="field-tag">REST API</span>
+        <span class="field-tag">Auto-Disposition</span>
+      </div>
+    </div>
+
+  </div>
+
+  <hr class="divider">
+
+  <!-- INTEGRATION TABLE -->
+  <div class="section-title">Data Field Reference</div>
+  <div class="section-sub">Fields exchanged between ReUse360™ and each integrated system. All data transfers use TLS 1.3 encryption. County retains ownership of all customer-specific records.</div>
+
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-top:1.5rem">
+    <table class="int-table">
+      <thead>
+        <tr>
+          <th>System</th>
+          <th>Direction</th>
+          <th>Key Fields</th>
+          <th>Purpose</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Beacon AMI</td>
+          <td>→ ReUse360</td>
+          <td style="font-size:0.78rem">Meter ID, 15-min interval reads, GPM, timestamp</td>
+          <td style="font-size:0.82rem;color:var(--slate)">Violation detection, leak differentiation, irrigation pattern analysis</td>
+          <td><span class="card-status status-pending" style="font-size:0.65rem">Pending</span></td>
+        </tr>
+        <tr>
+          <td>GIS Parcel</td>
+          <td>→ ReUse360</td>
+          <td style="font-size:0.78rem">Parcel ID, zoning, address, HOA polygon</td>
+          <td style="font-size:0.82rem;color:var(--slate)">Schedule assignment, HOA overlay, parcel-level compliance logic</td>
+          <td><span class="card-status status-pending" style="font-size:0.65rem">Pending</span></td>
+        </tr>
+        <tr>
+          <td>SAP Billing</td>
+          <td>→ ReUse360</td>
+          <td style="font-size:0.78rem">Account #, meter ID, rate code, service address</td>
+          <td style="font-size:0.82rem;color:var(--slate)">Reclaimed vs. potable normalization, customer record join</td>
+          <td><span class="card-status status-pending" style="font-size:0.65rem">Pending</span></td>
+        </tr>
+        <tr>
+          <td>Cityworks</td>
+          <td>ReUse360 →</td>
+          <td style="font-size:0.78rem">Address, violation type, timestamp, confidence score</td>
+          <td style="font-size:0.82rem;color:var(--slate)">Auto-generate or queue irrigation violation SRs by confidence tier</td>
+          <td><span class="card-status status-pending" style="font-size:0.65rem">Pending</span></td>
+        </tr>
+        <tr>
+          <td>SWFWMD</td>
+          <td>Manual → ReUse360</td>
+          <td style="font-size:0.78rem">Restriction phase, effective date, zone</td>
+          <td style="font-size:0.82rem;color:var(--slate)">Phase overlay trigger; admin-initiated with dual-auth audit log</td>
+          <td><span class="card-status status-live" style="font-size:0.65rem">Live</span></td>
+        </tr>
+        <tr>
+          <td>SeeClickFix</td>
+          <td>→ ReUse360</td>
+          <td style="font-size:0.78rem">Complaint address, description, timestamp</td>
+          <td style="font-size:0.82rem;color:var(--slate)">Citizen report enrichment; AMI corroboration required before SR escalation</td>
+          <td><span class="card-status status-live" style="font-size:0.65rem">Live</span></td>
+        </tr>
+        <tr>
+          <td>NOAA Weather</td>
+          <td>→ ReUse360</td>
+          <td style="font-size:0.78rem">Rainfall event, amount (inches), timestamp</td>
+          <td style="font-size:0.82rem;color:var(--slate)">Auto-suppress violation flags when rainfall exceeds 0.5" within 24 hrs</td>
+          <td><span class="card-status status-live" style="font-size:0.65rem">Live</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECURITY NOTE -->
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:2rem;display:flex;gap:2rem;align-items:flex-start;flex-wrap:wrap">
+    <div style="flex:1;min-width:220px">
+      <div style="font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--teal);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:0.5rem">Security & Hosting</div>
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;color:var(--white);margin-bottom:0.5rem">Azure Government Cloud</div>
+      <div style="font-size:0.83rem;color:var(--slate);line-height:1.6">All ReUse360™ data is hosted on FedRAMP-aligned Azure Government infrastructure. US soil data residency. TLS 1.3 encryption in transit, AES-256 at rest. NIST 800-53 Moderate target baseline.</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:0.6rem;flex:1;min-width:220px">
+      <div style="display:flex;align-items:center;gap:0.6rem;font-size:0.82rem;color:var(--light)"><span style="color:var(--teal);font-size:1rem">✓</span> Chapter 119 compliant data handling</div>
+      <div style="display:flex;align-items:center;gap:0.6rem;font-size:0.82rem;color:var(--light)"><span style="color:var(--teal);font-size:1rem">✓</span> County retains ownership of all customer data</div>
+      <div style="display:flex;align-items:center;gap:0.6rem;font-size:0.82rem;color:var(--light)"><span style="color:var(--teal);font-size:1rem">✓</span> Proprietary algorithm logic — §119.0715 trade secret designated</div>
+      <div style="display:flex;align-items:center;gap:0.6rem;font-size:0.82rem;color:var(--light)"><span style="color:var(--teal);font-size:1rem">✓</span> Role-based access control with MFA enforcement</div>
+      <div style="display:flex;align-items:center;gap:0.6rem;font-size:0.82rem;color:var(--light)"><span style="color:var(--teal);font-size:1rem">✓</span> 72-hour breach notification per §501.171 F.S.</div>
+    </div>
+  </div>
+
+  <!-- ACTION ITEMS -->
+  <div class="action-block">
+    <div class="action-title">⚠ Integration Confirmations Required</div>
+    <ul class="action-list">
+      <li>
+        <div>
+          <span class="action-who">AMI TEAM / BADGER METER — </span>
+          Confirm Beacon REST API availability, authentication method, and data dictionary for interval read access by third-party SaaS vendor.
+        </div>
+      </li>
+      <li>
+        <div>
+          <span class="action-who">GIS / ENTERPRISE TECHNOLOGY — </span>
+          Confirm availability of parcel feature service (GeoJSON or REST) including meter ID, zoning, and HOA boundary fields for vendor integration.
+        </div>
+      </li>
+      <li>
+        <div>
+          <span class="action-who">SHANE (CITYWORKS ADMIN) — </span>
+          Confirm Cityworks REST API supports external SR creation. Provide irrigation violation SR template ID and required payload fields.
+        </div>
+      </li>
+      <li>
+        <div>
+          <span class="action-who">IT / FINANCE SYSTEMS — </span>
+          Confirm SAP read-only integration method (API or scheduled extract) for customer account, meter ID, and rate code fields.
+        </div>
+      </li>
+    </ul>
+  </div>
+
+</div>
+
+<footer>
+  <p>© 2025 ReUse360™ — Created by Dr. Franklin Roberson</p>
+  <p style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--teal)">Integration Architecture v1.0 — Pre-Pilot</p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ReUse360 - Navigation Guide</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background: linear-gradient(135deg, #0ea5e9 0%, #1e40af 100%);
+      padding: 2rem;
+      color: #1e293b;
+    }
+    .container { max-width: 1400px; margin: 0 auto; }
+    h1 { 
+      text-align: center; 
+      color: white; 
+      margin-bottom: 1rem; 
+      font-size: 2.5rem;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .subtitle { 
+      text-align: center; 
+      color: rgba(255,255,255,0.9); 
+      margin-bottom: 2rem; 
+      font-size: 1.2rem;
+    }
+    .grid { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); 
+      gap: 2rem; 
+      margin-bottom: 2rem;
+    }
+    .section { 
+      background: white; 
+      border-radius: 1rem; 
+      padding: 2rem; 
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 3px solid #e2e8f0;
+    }
+    .section-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: white;
+    }
+    .icon-customer { background: linear-gradient(135deg, #0ea5e9, #1e40af); }
+    .icon-utility { background: linear-gradient(135deg, #1e40af, #7c3aed); }
+    .icon-marketing { background: linear-gradient(135deg, #10b981, #059669); }
+    .section-title { font-size: 1.5rem; font-weight: 700; color: #1e293b; }
+    .page-card {
+      background: #f8fafc;
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      border-left: 4px solid #0ea5e9;
+      transition: all 0.3s;
+    }
+    .page-card:hover {
+      transform: translateX(8px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .page-card.highlight {
+      border-left-color: #ef4444;
+      background: #fef2f2;
+    }
+    .page-name {
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: #1e40af;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .page-path {
+      font-family: 'Courier New', monospace;
+      background: white;
+      padding: 0.5rem;
+      border-radius: 0.375rem;
+      font-size: 0.875rem;
+      color: #059669;
+      margin-bottom: 0.5rem;
+      border: 1px solid #e2e8f0;
+    }
+    .page-desc {
+      color: #64748b;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+    .navigation-arrow {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin: 1rem 0;
+      padding: 1rem;
+      background: #f0f9ff;
+      border-radius: 0.75rem;
+      border: 2px dashed #0ea5e9;
+    }
+    .arrow-text {
+      flex: 1;
+      font-weight: 600;
+      color: #0369a1;
+    }
+    .btn-link {
+      display: inline-block;
+      padding: 0.75rem 1.5rem;
+      background: linear-gradient(135deg, #0ea5e9, #1e40af);
+      color: white;
+      text-decoration: none;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      transition: all 0.3s;
+      box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+    }
+    .btn-link:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(14, 165, 233, 0.4);
+    }
+    .feature-badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      background: #10b981;
+      color: white;
+      border-radius: 1rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-left: 0.5rem;
+    }
+    .badge-new { background: #ef4444; animation: pulse 2s infinite; }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+    .quick-links {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+    .quick-link-card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 0.75rem;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: all 0.3s;
+    }
+    .quick-link-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    }
+    .quick-link-icon {
+      font-size: 2.5rem;
+      margin-bottom: 0.75rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1><i class="fas fa-map-marked-alt"></i> ReUse360 Complete Navigation Guide</h1>
+    <p class="subtitle">📍 Complete sitemap with direct links to all pages</p>
+
+    <!-- QUICK ACCESS SECTION -->
+    <div class="section" style="margin-bottom: 2rem;">
+      <div class="section-header">
+        <div class="section-icon" style="background: #ef4444;">
+          <i class="fas fa-star"></i>
+        </div>
+        <div>
+          <div class="section-title">🚀 QUICK ACCESS - Click to Open</div>
+        </div>
+      </div>
+      <div class="quick-links">
+        <a href="app/tips.html" class="quick-link-card" style="text-decoration: none; color: inherit;">
+          <div class="quick-link-icon" style="color: #10b981;">💡</div>
+          <strong>Water-Saving Tips</strong>
+          <div style="color: #64748b; font-size: 0.875rem; margin-top: 0.5rem;">11 comprehensive tips</div>
+        </a>
+        <a href="app/compliance.html" class="quick-link-card" style="text-decoration: none; color: inherit;">
+          <div class="quick-link-icon" style="color: #7c3aed;">⚖️</div>
+          <strong>Compliance Page</strong>
+          <div style="color: #64748b; font-size: 0.875rem; margin-top: 0.5rem;">Customer ordinances</div>
+        </a>
+        <a href="utility/ordinances.html" class="quick-link-card" style="text-decoration: none; color: inherit;">
+          <div class="quick-link-icon" style="color: #1e40af;">📋</div>
+          <strong>Ordinance Manager</strong>
+          <div style="color: #64748b; font-size: 0.875rem; margin-top: 0.5rem;">Utility admin panel</div>
+        </a>
+        <a href="app/index.html" class="quick-link-card" style="text-decoration: none; color: inherit;">
+          <div class="quick-link-icon" style="color: #0ea5e9;">📊</div>
+          <strong>Customer Dashboard</strong>
+          <div style="color: #64748b; font-size: 0.875rem; margin-top: 0.5rem;">Main app entry</div>
+        </a>
+        <a href="app/integration.html" class="quick-link-card" style="text-decoration: none; color: inherit;">
+          <div class="quick-link-icon" style="color: #0ea5e9;">🧩</div>
+          <strong>Integration Architecture</strong>
+          <div style="color: #64748b; font-size: 0.875rem; margin-top: 0.5rem;">Data flow + security</div>
+        </a>
+        <a href="app/pilot.html" class="quick-link-card" style="text-decoration: none; color: inherit;">
+          <div class="quick-link-icon" style="color: #10b981;">✅</div>
+          <strong>30-Day Pilot</strong>
+          <div style="color: #64748b; font-size: 0.875rem; margin-top: 0.5rem;">Scope + success metrics</div>
+        </a>
+
+        <a href="utility/index.html" class="quick-link-card" style="text-decoration: none; color: inherit;">
+          <div class="quick-link-icon" style="color: #1e40af;">🏢</div>
+          <strong>Utility Dashboard</strong>
+          <div style="color: #64748b; font-size: 0.875rem; margin-top: 0.5rem;">Admin panel entry</div>
+        </a>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- CUSTOMER PWA SECTION -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-icon icon-customer">
+            <i class="fas fa-user"></i>
+          </div>
+          <div>
+            <div class="section-title">Customer Portal (PWA)</div>
+          </div>
+        </div>
+
+        <div class="page-card">
+          <div class="page-name">
+            <i class="fas fa-tachometer-alt"></i> Dashboard
+          </div>
+          <div class="page-path">app/index.html</div>
+          <div class="page-desc">Main customer dashboard with usage analytics, charts, and quick actions</div>
+          <div class="navigation-arrow">
+            <span class="arrow-text">Start here → Click buttons below</span>
+          </div>
+        </div>
+
+        <div class="page-card highlight">
+          <div class="page-name">
+            <i class="fas fa-lightbulb"></i> Water-Saving Tips
+            <span class="badge-new">YOU'RE LOOKING FOR THIS!</span>
+          </div>
+          <div class="page-path">app/tips.html</div>
+          <div class="page-desc">
+            <strong>✅ 11 COMPREHENSIVE TIP CARDS:</strong><br>
+            • Rain Sensors (Florida law) 🌧️<br>
+            • New Lawn Care (30/60-day rules) 🌱<br>
+            • Chemical Application (24hr wait) 🧪<br>
+            • Violation Fees ($193 fine) 🚫<br>
+            • Leak Detection, Timing, Mulch + more<br>
+            <strong style="color: #ef4444;">→ From dashboard, click "Water-Saving Tips" button</strong>
+          </div>
+          <div style="margin-top: 1rem;">
+            <a href="app/tips.html" class="btn-link">
+              <i class="fas fa-external-link-alt"></i> Open Tips Page Now
+            </a>
+          </div>
+        </div>
+
+        <div class="page-card highlight">
+          <div class="page-name">
+            <i class="fas fa-balance-scale"></i> Compliance & Ordinances
+          </div>
+          <div class="page-path">app/compliance.html</div>
+          <div class="page-desc">
+            <strong>✅ CUSTOMER COMPLIANCE CENTER:</strong><br>
+            • Address calculator for your rules<br>
+            • 8 Florida ordinance cards (82.2, 82.2-2, 82.2-3, etc.)<br>
+            • Visual calendars (green/red days)<br>
+            • Penalty structure & exemptions<br>
+            <strong style="color: #ef4444;">→ From dashboard, click "Compliance & Ordinances" button</strong>
+          </div>
+          <div style="margin-top: 1rem;">
+            <a href="app/compliance.html" class="btn-link">
+              <i class="fas fa-external-link-alt"></i> Open Compliance Page Now
+            </a>
+          </div>
+        </div>
+
+        <div class="page-card">
+          <div class="page-name">
+            <i class="fas fa-calendar-alt"></i> Irrigation Schedule
+          </div>
+          <div class="page-path">app/schedule.html</div>
+          <div class="page-desc">Interactive irrigation schedule management with zone controls</div>
+        </div>
+      </div>
+
+      <!-- UTILITY DASHBOARD SECTION -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-icon icon-utility">
+            <i class="fas fa-building"></i>
+          </div>
+          <div>
+            <div class="section-title">Utility Admin Panel</div>
+          </div>
+        </div>
+
+        <div class="page-card">
+          <div class="page-name">
+            <i class="fas fa-chart-line"></i> System Overview
+          </div>
+          <div class="page-path">utility/index.html</div>
+          <div class="page-desc">Main utility dashboard with KPIs, system demand charts, zone status</div>
+          <div class="navigation-arrow">
+            <span class="arrow-text">Look for tabs at top → Click "Ordinances"</span>
+          </div>
+        </div>
+
+        <div class="page-card highlight">
+          <div class="page-name">
+            <i class="fas fa-gavel"></i> Ordinance Manager
+            <span class="badge-new">ADMIN VERSION!</span>
+          </div>
+          <div class="page-path">utility/ordinances.html</div>
+          <div class="page-desc">
+            <strong>✅ UTILITY ORDINANCE MANAGEMENT:</strong><br>
+            • 4 Compliance statistics (95.3% rate)<br>
+            • 8 Active ordinances table<br>
+            • 58 Active violations tracker<br>
+            • $47,500 penalties issued<br>
+            • Emergency drought activation button<br>
+            <strong style="color: #ef4444;">→ From utility dashboard, click "Ordinances" TAB (4th tab in header)</strong>
+          </div>
+          <div style="margin-top: 1rem;">
+            <a href="utility/ordinances.html" class="btn-link">
+              <i class="fas fa-external-link-alt"></i> Open Ordinances Manager Now
+            </a>
+          </div>
+        </div>
+
+        <div class="page-card">
+          <div class="page-name">
+            <i class="fas fa-users"></i> Customer Management
+          </div>
+          <div class="page-path">utility/customers.html</div>
+          <div class="page-desc">View and manage customer accounts, usage patterns, and alerts</div>
+        </div>
+
+        <div class="page-card">
+          <div class="page-name">
+            <i class="fas fa-chart-bar"></i> Advanced Analytics
+          </div>
+          <div class="page-path">utility/analytics.html</div>
+          <div class="page-desc">Deep analytics with conservation impact and trend analysis</div>
+        </div>
+      </div>
+
+      <!-- MARKETING WEBSITE SECTION -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-icon icon-marketing">
+            <i class="fas fa-globe"></i>
+          </div>
+          <div>
+            <div class="section-title">Marketing Website</div>
+          </div>
+        </div>
+
+        <div class="page-card">
+          <div class="page-name">
+            <i class="fas fa-home"></i> Landing Page
+          </div>
+          <div class="page-path">index.html</div>
+          <div class="page-desc">Hero section, features overview, value proposition, CTAs</div>
+        </div>
+
+        <div class="page-card">
+          <div class="page-name">
+            <i class="fas fa-info-circle"></i> About & Story
+          </div>
+          <div class="page-path">about.html</div>
+          <div class="page-desc">Dr. Franklin Roberson's story, mission, vision, team info</div>
+        </div>
+
+        <div class="page-card">
+          <div class="page-name">
+            <i class="fas fa-lightbulb"></i> Solutions
+          </div>
+          <div class="page-path">solutions.html</div>
+          <div class="page-desc">Detailed solutions for utilities, customers, benefits, ROI</div>
+        </div>
+
+        <div class="page-card">
+          <div class="page-name">
+            <i class="fas fa-envelope"></i> Contact & Demo
+          </div>
+          <div class="page-path">contact.html</div>
+          <div class="page-desc">Contact form, demo request, location info, support</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TROUBLESHOOTING SECTION -->
+    <div class="section" style="background: #fef2f2; border: 2px solid #ef4444;">
+      <div class="section-header">
+        <div class="section-icon" style="background: #ef4444;">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div>
+          <div class="section-title">🚨 CAN'T FIND A PAGE? Troubleshooting</div>
+        </div>
+      </div>
+
+      <div style="background: white; padding: 1.5rem; border-radius: 0.75rem; margin-bottom: 1rem;">
+        <h3 style="color: #ef4444; margin-bottom: 1rem;"><i class="fas fa-lightbulb"></i> Can't find Water-Saving Tips?</h3>
+        <ol style="color: #64748b; line-height: 2;">
+          <li><strong>Option 1:</strong> Click this direct link → <a href="app/tips.html" class="btn-link" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Open app/tips.html</a></li>
+          <li><strong>Option 2:</strong> Open <code style="background: #f1f5f9; padding: 0.25rem 0.5rem; border-radius: 0.25rem;">app/index.html</code> → Look for 3 buttons in the middle → Click <strong>"💡 Water-Saving Tips"</strong></li>
+          <li><strong>Option 3:</strong> Type in browser: <code style="background: #f1f5f9; padding: 0.25rem 0.5rem; border-radius: 0.25rem;">app/tips.html</code></li>
+        </ol>
+      </div>
+
+      <div style="background: white; padding: 1.5rem; border-radius: 0.75rem;">
+        <h3 style="color: #7c3aed; margin-bottom: 1rem;"><i class="fas fa-gavel"></i> Ordinances tab missing/not visible?</h3>
+        <ol style="color: #64748b; line-height: 2;">
+          <li><strong>Option 1:</strong> Click this direct link → <a href="utility/ordinances.html" class="btn-link" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: linear-gradient(135deg, #7c3aed, #1e40af);">Open utility/ordinances.html</a></li>
+          <li><strong>Option 2:</strong> Open <code style="background: #f1f5f9; padding: 0.25rem 0.5rem; border-radius: 0.25rem;">utility/index.html</code> → Look at the blue header → Find <strong>"Ordinances"</strong> tab (4th tab, after Analytics)</li>
+          <li><strong>Option 3:</strong> If tabs are wrapping, try making window wider or zooming out (Ctrl + "-" or Cmd + "-")</li>
+          <li><strong>Option 4:</strong> Type in browser: <code style="background: #f1f5f9; padding: 0.25rem 0.5rem; border-radius: 0.25rem;">utility/ordinances.html</code></li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- FILE STATISTICS -->
+    <div class="section" style="margin-top: 2rem; background: linear-gradient(135deg, #10b981, #059669); color: white;">
+      <h2 style="color: white; margin-bottom: 1rem; text-align: center;">📊 Platform Statistics</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; text-align: center;">
+        <div>
+          <div style="font-size: 2.5rem; font-weight: 700;">12</div>
+          <div style="opacity: 0.9;">HTML Pages</div>
+        </div>
+        <div>
+          <div style="font-size: 2.5rem; font-weight: 700;">8</div>
+          <div style="opacity: 0.9;">Ordinances</div>
+        </div>
+        <div>
+          <div style="font-size: 2.5rem; font-weight: 700;">11</div>
+          <div style="opacity: 0.9;">Water Tips</div>
+        </div>
+        <div>
+          <div style="font-size: 2.5rem; font-weight: 700;">6</div>
+          <div style="opacity: 0.9;">Data Tables</div>
+        </div>
+        <div>
+          <div style="font-size: 2.5rem; font-weight: 700;">100%</div>
+          <div style="opacity: 0.9;">Mobile Ready</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 2rem; padding: 2rem; background: white; border-radius: 1rem;">
+      <h3 style="color: #1e40af; margin-bottom: 1rem;">✅ All pages are built and ready!</h3>
+      <p style="color: #64748b; margin-bottom: 1.5rem;">Use the direct links above or follow the navigation paths</p>
+      <a href="index.html" class="btn-link">
+        <i class="fas fa-home"></i> Go to Marketing Website Home
+      </a>
+      <a href="app/index.html" class="btn-link" style="background: linear-gradient(135deg, #10b981, #059669); margin-left: 1rem;">
+        <i class="fas fa-tachometer-alt"></i> Go to Customer Dashboard
+      </a>
+    </div>
+  </div>
+</body>
+</html>

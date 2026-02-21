@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Utility Dashboard - ReUse360</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../css/main.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { background: #f0f4f8; }
+    .utility-header { background: linear-gradient(135deg, #1e40af, #0ea5e9); color: white; padding: 1.5rem 0; }
+    .nav-tabs { 
+      display: flex; 
+      gap: 0.5rem; 
+      margin-top: 1rem; 
+      flex-wrap: wrap; 
+      overflow-x: auto;
+      padding-bottom: 0.5rem;
+    }
+    .nav-tab { 
+      padding: 0.75rem 1.5rem; 
+      background: rgba(255,255,255,0.1); 
+      border-radius: 0.5rem 0.5rem 0 0; 
+      color: white; 
+      cursor: pointer; 
+      transition: all 0.3s; 
+      text-decoration: none; 
+      white-space: nowrap;
+      flex-shrink: 0;
+      font-weight: 500;
+      border: 2px solid transparent;
+    }
+    .nav-tab:hover { 
+      background: rgba(255,255,255,0.2); 
+      border-color: rgba(255,255,255,0.3);
+      transform: translateY(-2px);
+    }
+    .nav-tab.active { 
+      background: #f0f4f8; 
+      color: #1e40af;
+      font-weight: 600;
+    }
+    .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+    .kpi-card { background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .kpi-value { font-size: 2.5rem; font-weight: 700; margin: 0.5rem 0; }
+    .kpi-label { color: #64748b; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    .kpi-trend { font-size: 0.875rem; margin-top: 0.5rem; }
+    .chart-container { background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 1.5rem; }
+    .zone-status { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+    .zone-card { background: white; padding: 1.5rem; border-radius: 0.75rem; border-left: 4px solid #10b981; }
+    .zone-card.warning { border-left-color: #f59e0b; }
+    .zone-card.alert { border-left-color: #ef4444; }
+    .status-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.75rem; font-weight: 600; }
+    .status-active { background: #d1fae5; color: #065f46; }
+    .status-warning { background: #fed7aa; color: #92400e; }
+  </style>
+</head>
+<body>
+  <header class="utility-header">
+    <div class="container">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h1 style="color: white; margin: 0;"><i class="fas fa-building"></i> Pinellas County Utilities</h1>
+        <div style="color: rgba(255,255,255,0.9);">Admin: System Manager</div>
+      </div>
+      <div class="nav-tabs">
+        <a href="index.html" class="nav-tab active">Overview</a>
+        <a href="customers.html" class="nav-tab">Customers</a>
+        <a href="analytics.html" class="nav-tab">Analytics</a>
+        <a href="ordinances.html" class="nav-tab">Ordinances</a>
+        <span class="nav-tab" style="cursor: not-allowed; opacity: 0.5;">Alerts</span>
+        <span class="nav-tab" style="cursor: not-allowed; opacity: 0.5;">Settings</span>
+      </div>
+    </div>
+  </header>
+
+  <main style="padding: 2rem 0;">
+    <div class="container">
+      <div style="background: linear-gradient(135deg, #7c3aed, #1e40af); color: white; padding: 1rem 1.5rem; border-radius: 0.75rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 1rem;">
+        <i class="fas fa-info-circle" style="font-size: 1.5rem;"></i>
+        <div>
+          <strong>📋 Looking for Ordinances?</strong> Click the "Ordinances" tab above (4th tab in the header). 
+          <a href="../NAVIGATION_GUIDE.html" style="color: white; text-decoration: underline; margin-left: 0.5rem;">View Full Site Map</a>
+        </div>
+      </div>
+      <h2 style="margin-bottom: 1.5rem;">System Overview</h2>
+      
+      <div class="dashboard-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">Total Customers</div>
+          <div class="kpi-value" style="color: #0ea5e9;">1,247</div>
+          <div class="kpi-trend" style="color: #10b981;"><i class="fas fa-arrow-up"></i> 12 new this month</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Daily System Usage</div>
+          <div class="kpi-value" style="color: #1e40af;">2.4M</div>
+          <div class="kpi-trend" style="color: #10b981;"><i class="fas fa-arrow-down"></i> 18% vs peak</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Avg Pressure (PSI)</div>
+          <div class="kpi-value" style="color: #10b981;">64</div>
+          <div class="kpi-trend" style="color: #64748b;"><i class="fas fa-check-circle"></i> Within target range</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Active Alerts</div>
+          <div class="kpi-value" style="color: #f59e0b;">8</div>
+          <div class="kpi-trend" style="color: #64748b;"><i class="fas fa-bell"></i> 3 high priority</div>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+        <div class="chart-container">
+          <h3 style="margin-bottom: 1rem;">System Demand - Last 7 Days</h3>
+          <canvas id="demandChart" style="height: 300px;"></canvas>
+        </div>
+        <div class="chart-container">
+          <h3 style="margin-bottom: 1rem;">Conservation Impact</h3>
+          <canvas id="conservationChart" style="height: 300px;"></canvas>
+        </div>
+      </div>
+
+      <h3 style="margin-bottom: 1rem;">Zone Status</h3>
+      <div class="zone-status">
+        <div class="zone-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <strong>Central Clearwater (CCW-1)</strong>
+            <span class="status-badge status-active">Active</span>
+          </div>
+          <div style="color: #64748b; font-size: 0.875rem;">Pressure: 65 PSI | Customers: 245 | Demand: 70%</div>
+        </div>
+        <div class="zone-card warning">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <strong>North County (NCT-2)</strong>
+            <span class="status-badge status-warning">High Demand</span>
+          </div>
+          <div style="color: #64748b; font-size: 0.875rem;">Pressure: 58 PSI | Customers: 312 | Demand: 92%</div>
+        </div>
+        <div class="zone-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <strong>Beach Communities (BCH-3)</strong>
+            <span class="status-badge status-active">Active</span>
+          </div>
+          <div style="color: #64748b; font-size: 0.875rem;">Pressure: 62 PSI | Customers: 189 | Demand: 65%</div>
+        </div>
+        <div class="zone-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <strong>South District (STH-4)</strong>
+            <span class="status-badge status-active">Active</span>
+          </div>
+          <div style="color: #64748b; font-size: 0.875rem;">Pressure: 68 PSI | Customers: 501 | Demand: 75%</div>
+        </div>
+      </div>
+
+      <div style="margin-top: 2rem;">
+        <h3 style="margin-bottom: 1rem;">Recent System Alerts</h3>
+        <div style="background: white; border-radius: 1rem; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+          <div style="padding: 1rem 0; border-bottom: 1px solid #e2e8f0;">
+            <div style="display: flex; justify-content: between; align-items: start;">
+              <i class="fas fa-exclamation-triangle" style="color: #f59e0b; font-size: 1.25rem; margin-right: 1rem; margin-top: 0.25rem;"></i>
+              <div style="flex: 1;">
+                <strong>High Demand Alert - North County Zone</strong>
+                <div style="color: #64748b; font-size: 0.875rem; margin-top: 0.25rem;">System demand at 92% capacity. Consider targeted customer outreach.</div>
+              </div>
+              <span style="font-size: 0.875rem; color: #64748b;">15 min ago</span>
+            </div>
+          </div>
+          <div style="padding: 1rem 0; border-bottom: 1px solid #e2e8f0;">
+            <div style="display: flex; justify-content: space-between; align-items: start;">
+              <i class="fas fa-check-circle" style="color: #10b981; font-size: 1.25rem; margin-right: 1rem; margin-top: 0.25rem;"></i>
+              <div style="flex: 1;">
+                <strong>Conservation Milestone Reached</strong>
+                <div style="color: #64748b; font-size: 0.875rem; margin-top: 0.25rem;">System-wide usage down 18% compared to peak season average.</div>
+              </div>
+              <span style="font-size: 0.875rem; color: #64748b;">2 hours ago</span>
+            </div>
+          </div>
+          <div style="padding: 1rem 0;">
+            <div style="display: flex; justify-content: space-between; align-items: start;">
+              <i class="fas fa-info-circle" style="color: #0ea5e9; font-size: 1.25rem; margin-right: 1rem; margin-top: 0.25rem;"></i>
+              <div style="flex: 1;">
+                <strong>Scheduled Maintenance - Beach Communities</strong>
+                <div style="color: #64748b; font-size: 0.875rem; margin-top: 0.25rem;">Zone BCH-3 maintenance window scheduled for Thursday 2-5 AM.</div>
+              </div>
+              <span style="font-size: 0.875rem; color: #64748b;">5 hours ago</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: 3rem; padding: 2rem;">
+        <a href="../index.html" class="btn btn-outline btn-lg" onclick="return true;">Back to Home</a>
+      </div>
+    </div>
+  </main>
+
+  <script src="../js/main.js"></script>
+  <script src="../js/api.js"></script>
+  
+  <!-- 🤖 IBM watsonx Assistant Integration -->
+  <!-- See CHATBOT_INTEGRATION.md for setup instructions -->
+  <!-- The chatbot can help admins with system queries and compliance data -->
+  
+  <script>
+    // AGGRESSIVE: Prevent all auto-scrolling
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+
+    // Prevent any scripts from forcing scroll to top
+    let scrollPosition = 0;
+    
+    window.addEventListener('beforeunload', () => {
+      scrollPosition = window.scrollY;
+    });
+
+    window.addEventListener('load', () => {
+      if (scrollPosition > 0) {
+        window.scrollTo(0, scrollPosition);
+      }
+    });
+
+    // Prevent anchor links from scrolling
+    document.addEventListener('click', (e) => {
+      if (e.target.tagName === 'A' && e.target.getAttribute('href') === '#') {
+        e.preventDefault();
+      }
+    });
+
+    // Initialize dashboard
+    document.addEventListener('DOMContentLoaded', () => {
+      // Store current scroll position
+      const currentScroll = window.scrollY;
+      
+      // Demand Chart
+      const demandCtx = document.getElementById('demandChart');
+      if (!demandCtx) return;
+      
+      new Chart(demandCtx, {
+        type: 'line',
+        data: {
+          labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+          datasets: [{
+            label: 'System Demand (Million Gallons)',
+            data: [2.8, 2.4, 2.6, 2.2, 2.5, 2.9, 2.4],
+            borderColor: '#0ea5e9',
+            backgroundColor: 'rgba(14, 165, 233, 0.1)',
+            tension: 0.4,
+            fill: true
+          }, {
+            label: 'Target Capacity',
+            data: [3.2, 3.2, 3.2, 3.2, 3.2, 3.2, 3.2],
+            borderColor: '#10b981',
+            borderDash: [5, 5],
+            fill: false
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom' } }
+        }
+      });
+
+      // Conservation Chart
+      const conservationCtx = document.getElementById('conservationChart');
+      if (!conservationCtx) return;
+      
+      new Chart(conservationCtx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Saved', 'Used'],
+          datasets: [{
+            data: [18, 82],
+            backgroundColor: ['#10b981', '#e2e8f0']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom' },
+            tooltip: {
+              callbacks: {
+                label: (context) => `${context.label}: ${context.parsed}%`
+              }
+            }
+          }
+        }
+      });
+
+      // Restore scroll position after charts initialize
+      setTimeout(() => {
+        if (currentScroll > 0) {
+          window.scrollTo({
+            top: currentScroll,
+            behavior: 'auto'
+          });
+        }
+      }, 100);
+    });
+
+    // Final safety: prevent any forced scrolls
+    let lastScrollY = 0;
+    window.addEventListener('scroll', () => {
+      lastScrollY = window.scrollY;
+    }, { passive: true });
+  </script>
+</body>
+</html>

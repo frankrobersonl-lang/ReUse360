@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Management - ReUse360</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../../css/main.css">
+  <style>
+    body { background: #f0f4f8; }
+    .utility-header { background: linear-gradient(135deg, #1e40af, #0ea5e9); color: white; padding: 1.5rem 0; }
+    .nav-tabs { display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap; }
+    .nav-tab { padding: 0.75rem 1.5rem; background: rgba(255,255,255,0.1); border-radius: 0.5rem 0.5rem 0 0; color: white; cursor: pointer; transition: all 0.3s; text-decoration: none; white-space: nowrap; }
+    .nav-tab:hover { background: rgba(255,255,255,0.2); }
+    .nav-tab.active { background: #f0f4f8; color: #1e40af; }
+    .search-bar { background: white; padding: 1rem; border-radius: 1rem; margin-bottom: 1.5rem; display: flex; gap: 1rem; }
+    .customer-table { background: white; border-radius: 1rem; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: #f8fafc; padding: 1rem; text-align: left; font-weight: 600; color: #475569; border-bottom: 2px solid #e2e8f0; }
+    td { padding: 1rem; border-bottom: 1px solid #e2e8f0; }
+    tr:hover { background: #f8fafc; }
+    .customer-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.75rem; font-weight: 600; }
+    .badge-excellent { background: #d1fae5; color: #065f46; }
+    .badge-good { background: #dbeafe; color: #1e40af; }
+    .badge-warning { background: #fed7aa; color: #92400e; }
+  </style>
+</head>
+<body>
+  <header class="utility-header">
+    <div class="container">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h1 style="color: white; margin: 0;"><i class="fas fa-building"></i> Pinellas County Utilities</h1>
+        <div style="color: rgba(255,255,255,0.9);">Admin: System Manager</div>
+      </div>
+      <div class="nav-tabs">
+        <a href="index.html" class="nav-tab">Overview</a>
+        <div class="nav-tab active">Customers</div>
+        <a href="analytics.html" class="nav-tab">Analytics</a>
+        <a href="ordinances.html" class="nav-tab">Ordinances</a>
+        <div class="nav-tab">Alerts</div>
+        <div class="nav-tab">Settings</div>
+      </div>
+    </div>
+  </header>
+
+  <main style="padding: 2rem 0;">
+    <div class="container">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h2 style="margin: 0;">Customer Management</h2>
+        <button class="btn btn-primary" onclick="alert('Export feature coming soon')"><i class="fas fa-download"></i> Export Data</button>
+      </div>
+
+      <div class="search-bar">
+        <input type="text" class="form-input" placeholder="Search customers..." style="flex: 1; margin: 0;" oninput="filterCustomers(this.value)">
+        <select class="form-select" style="width: 200px; margin: 0;" onchange="filterByZone(this.value)">
+          <option value="">All Zones</option>
+          <option value="CCW-1">Central Clearwater</option>
+          <option value="NCT-2">North County</option>
+          <option value="BCH-3">Beach Communities</option>
+          <option value="STH-4">South District</option>
+        </select>
+        <select class="form-select" style="width: 200px; margin: 0;">
+          <option value="">All Status</option>
+          <option value="excellent">Excellent</option>
+          <option value="good">Good</option>
+          <option value="warning">Needs Attention</option>
+        </select>
+      </div>
+
+      <div class="customer-table">
+        <table id="customersTable">
+          <thead>
+            <tr>
+              <th>Account #</th>
+              <th>Customer Name</th>
+              <th>Address</th>
+              <th>Zone</th>
+              <th>Monthly Usage</th>
+              <th>Efficiency</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>PCU-12345</strong></td>
+              <td>Demo Customer</td>
+              <td>123 Water Conservation Blvd</td>
+              <td>CCW-1</td>
+              <td>4,250 gal</td>
+              <td><span class="customer-badge badge-excellent">92%</span></td>
+              <td><span class="customer-badge badge-excellent">Excellent</span></td>
+              <td>
+                <button class="btn btn-sm" style="padding: 0.25rem 0.75rem;" onclick="viewCustomer('PCU-12345')"><i class="fas fa-eye"></i></button>
+                <button class="btn btn-sm" style="padding: 0.25rem 0.75rem; margin-left: 0.5rem;" onclick="messageCustomer('PCU-12345')"><i class="fas fa-envelope"></i></button>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>PCU-23456</strong></td>
+              <td>Johnson Residence</td>
+              <td>456 Oakwood Drive</td>
+              <td>NCT-2</td>
+              <td>5,120 gal</td>
+              <td><span class="customer-badge badge-good">85%</span></td>
+              <td><span class="customer-badge badge-good">Good</span></td>
+              <td>
+                <button class="btn btn-sm" style="padding: 0.25rem 0.75rem;"><i class="fas fa-eye"></i></button>
+                <button class="btn btn-sm" style="padding: 0.25rem 0.75rem; margin-left: 0.5rem;"><i class="fas fa-envelope"></i></button>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>PCU-34567</strong></td>
+              <td>Smith Property</td>
+              <td>789 Beachside Ave</td>
+              <td>BCH-3</td>
+              <td>7,890 gal</td>
+              <td><span class="customer-badge badge-warning">68%</span></td>
+              <td><span class="customer-badge badge-warning">High Usage</span></td>
+              <td>
+                <button class="btn btn-sm" style="padding: 0.25rem 0.75rem;"><i class="fas fa-eye"></i></button>
+                <button class="btn btn-sm" style="padding: 0.25rem 0.75rem; margin-left: 0.5rem;"><i class="fas fa-envelope"></i></button>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>PCU-45678</strong></td>
+              <td>Martinez Household</td>
+              <td>321 Pinewood Circle</td>
+              <td>STH-4</td>
+              <td>3,980 gal</td>
+              <td><span class="customer-badge badge-excellent">95%</span></td>
+              <td><span class="customer-badge badge-excellent">Excellent</span></td>
+              <td>
+                <button class="btn btn-sm" style="padding: 0.25rem 0.75rem;"><i class="fas fa-eye"></i></button>
+                <button class="btn btn-sm" style="padding: 0.25rem 0.75rem; margin-left: 0.5rem;"><i class="fas fa-envelope"></i></button>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>PCU-56789</strong></td>
+              <td>Green Valley HOA</td>
+              <td>555 Community Blvd</td>
+              <td>CCW-1</td>
+              <td>42,500 gal</td>
+              <td><span class="customer-badge badge-good">88%</span></td>
+              <td><span class="customer-badge badge-good">Good</span></td>
+              <td>
+                <button class="btn btn-sm" style="padding: 0.25rem 0.75rem;"><i class="fas fa-eye"></i></button>
+                <button class="btn btn-sm" style="padding: 0.25rem 0.75rem; margin-left: 0.5rem;"><i class="fas fa-envelope"></i></button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; padding: 1rem; background: white; border-radius: 1rem;">
+        <div style="color: #64748b;">Showing 1-5 of 1,247 customers</div>
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="btn btn-outline btn-sm">Previous</button>
+          <button class="btn btn-primary btn-sm">1</button>
+          <button class="btn btn-outline btn-sm">2</button>
+          <button class="btn btn-outline btn-sm">3</button>
+          <button class="btn btn-outline btn-sm">Next</button>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: 2rem;">
+        <a href="index.html" class="btn btn-outline">Back to Dashboard</a>
+      </div>
+    </div>
+  </main>
+
+  <script src="../js/main.js"></script>
+  <script src="../js/api.js"></script>
+  <script>
+    function filterCustomers(query) {
+      console.log('Filtering customers:', query);
+      // In production, this would filter the table
+    }
+
+    function filterByZone(zone) {
+      console.log('Filter by zone:', zone);
+      // In production, this would filter by zone
+    }
+
+    function viewCustomer(accountNum) {
+      alert(`Viewing customer details for ${accountNum}\n\nThis would open a detailed customer profile with:\n- Usage history\n- Irrigation schedules\n- Alert history\n- Contact information`);
+    }
+
+    function messageCustomer(accountNum) {
+      alert(`Send message to customer ${accountNum}\n\nThis would open a message composer to send:\n- Conservation tips\n- Alerts\n- Personalized recommendations`);
+    }
+  </script>
+</body>
+</html>

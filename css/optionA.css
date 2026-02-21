@@ -1,0 +1,171 @@
+/* ReUse360 — Option A Design System (Shared)
+   Step 3 refactor: centralizes the Step 2 visual alignment rules.
+   Baseline visual target: Customer Dashboard (/app/index.html).
+*/
+
+/* Base palette + typography (applies to both app + utility) */
+.optionA {
+  --navy: #f0f4f8;
+  --deep: #eaf0f6;
+  --card: #ffffff;
+  --card2: #ffffff;
+  --border: #e2e8f0;
+
+  --teal: #0ea5e9;
+  --teal-dim: rgba(14,165,233,0.12);
+  --teal-mid: rgba(14,165,233,0.28);
+
+  --blue: #1e40af;
+  --blue-dim: rgba(30,64,175,0.10);
+
+  --amber: #f59e0b;
+  --amber-dim: rgba(245,158,11,0.16);
+
+  --green: #10b981;
+  --green-dim: rgba(16,185,129,0.14);
+
+  --red: #ef4444;
+  --red-dim: rgba(239,68,68,0.12);
+
+  --slate: #64748b;
+  --light: #1e293b;
+  --white: #0f172a;
+
+  background: #f0f4f8;
+  color: #0f172a;
+  font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  font-weight: 400;
+}
+
+/* Disable the animated grid if present */
+.optionA::before { display:none !important; }
+
+/* =========================
+   App pages (Pilot + Integration)
+   ========================= */
+.optionA-app nav {
+  background: #ffffff !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  backdrop-filter: none !important;
+}
+
+.optionA-app .nav-logo { color: #0ea5e9 !important; }
+
+.optionA-app .nav-links a {
+  color: #64748b !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.2px !important;
+}
+.optionA-app .nav-links a:hover,
+.optionA-app .nav-links a.active { color: #0ea5e9 !important; }
+
+.optionA-app .nav-cta {
+  background: #0ea5e9 !important;
+  color: #ffffff !important;
+  border-radius: 0.75rem !important;
+  padding: 0.55rem 1.15rem !important;
+}
+
+.optionA-app .hero,
+.optionA-app .content { max-width: 1100px !important; }
+
+.optionA-app .badge {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+.optionA-app .hero-sub,
+.optionA-app .sec-desc { color: #64748b !important; }
+
+.optionA-app .sec-label { color: #0ea5e9 !important; }
+.optionA-app .sec-title { color: #0f172a !important; }
+
+.optionA-app hr.div { border-top: 1px solid #e2e8f0 !important; }
+
+.optionA-app .kpi-strip {
+  border: 1px solid #e2e8f0 !important;
+  background: #e2e8f0 !important;
+  border-radius: 1rem !important;
+}
+.optionA-app .kpi-cell { background: #ffffff !important; }
+.optionA-app .kpi-label,
+.optionA-app .kpi-note { color: #64748b !important; }
+
+.optionA-app table { color: #0f172a !important; }
+.optionA-app th { color: #0ea5e9 !important; }
+
+/* =========================
+   Utility pages (Alerts + Settings)
+   ========================= */
+.optionA-utility .util-nav {
+  background: linear-gradient(135deg, #1e40af, #0ea5e9) !important;
+  border-bottom: none !important;
+}
+
+.optionA-utility .util-admin { color: rgba(255,255,255,0.9) !important; }
+
+.optionA-utility .util-tabs {
+  border-top: none !important;
+  gap: 0.5rem !important;
+  padding-bottom: 0.5rem !important;
+  flex-wrap: wrap !important;
+  overflow-x: auto !important;
+}
+
+.optionA-utility .util-tab {
+  background: rgba(255,255,255,0.10) !important;
+  color: #ffffff !important;
+  border-radius: 0.5rem 0.5rem 0 0 !important;
+  border: 2px solid transparent !important;
+  letter-spacing: 0 !important;
+}
+
+.optionA-utility .util-tab:hover {
+  background: rgba(255,255,255,0.20) !important;
+  border-color: rgba(255,255,255,0.30) !important;
+  transform: translateY(-2px);
+}
+
+.optionA-utility .util-tab.active {
+  background: #f0f4f8 !important;
+  color: #1e40af !important;
+  font-weight: 700 !important;
+  border-bottom-color: transparent !important;
+}
+
+.optionA-utility .page { max-width: 1100px !important; }
+
+.optionA-utility .kpi-strip,
+.optionA-utility .alert-card,
+.optionA-utility .setting-card,
+.optionA-utility .scard,
+.optionA-utility .role-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+.optionA-utility .page-title,
+.optionA-utility .sec-title,
+.optionA-utility .alert-title,
+.optionA-utility .setting-title,
+.optionA-utility .srow-label,
+.optionA-utility .role-name {
+  color: #0f172a !important;
+}
+
+.optionA-utility .kpi-label,
+.optionA-utility .alert-desc,
+.optionA-utility .alert-meta,
+.optionA-utility .sec-desc,
+.optionA-utility .srow-desc,
+.optionA-utility .role-desc {
+  color: #64748b !important;
+}
+
+.optionA-utility .filter-btn { background: #ffffff !important; }
+
+.optionA-utility .btn-teal {
+  background: #0ea5e9 !important;
+  color: #ffffff !important;
+}

@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
 <link rel="stylesheet" href="../../css/main.css">
+<link rel="stylesheet" href="../../css/optionA.css">
 <meta name="theme-color" content="#0ea5e9">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=Nunito+Sans:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
@@ -132,96 +133,9 @@
   }
 
 
-  /* === ReUse360 Option A Design System Alignment (Step 2) === */
-  :root {
-    --navy: #f0f4f8;
-    --deep: #eaf0f6;
-    --card: #ffffff;
-    --card2: #ffffff;
-    --border: #e2e8f0;
-
-    --teal: #0ea5e9;
-    --teal-dim: rgba(14,165,233,0.12);
-    --teal-mid: rgba(14,165,233,0.28);
-
-    --blue: #1e40af;
-    --blue-dim: rgba(30,64,175,0.10);
-
-    --amber: #f59e0b;
-    --amber-dim: rgba(245,158,11,0.16);
-
-    --green: #10b981;
-    --green-dim: rgba(16,185,129,0.14);
-
-    --red: #ef4444;
-    --red-dim: rgba(239,68,68,0.12);
-
-    --slate: #64748b;
-    --light: #0f172a;
-    --white: #0f172a;
-  }
-
-  body {
-    background: #f0f4f8 !important;
-    color: #0f172a !important;
-    font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif !important;
-    font-weight: 400 !important;
-  }
-
-  /* Utility header to match /utility/index.html */
-  .util-nav {
-    background: linear-gradient(135deg, #1e40af, #0ea5e9) !important;
-    border-bottom: none !important;
-  }
-
-  .util-admin { color: rgba(255,255,255,0.9) !important; }
-
-  .util-tabs { border-top: none !important; gap: 0.5rem !important; padding-bottom: 0.5rem !important; flex-wrap: wrap !important; overflow-x: auto !important; }
-  .util-tab {
-    background: rgba(255,255,255,0.10) !important;
-    color: #ffffff !important;
-    border-radius: 0.5rem 0.5rem 0 0 !important;
-    border: 2px solid transparent !important;
-    letter-spacing: 0 !important;
-  }
-  .util-tab:hover {
-    background: rgba(255,255,255,0.20) !important;
-    border-color: rgba(255,255,255,0.30) !important;
-    transform: translateY(-2px);
-  }
-  .util-tab.active {
-    background: #f0f4f8 !important;
-    color: #1e40af !important;
-    font-weight: 700 !important;
-    border-bottom-color: transparent !important;
-  }
-
-  /* Page + cards */
-  .page { max-width: 1100px !important; }
-
-  .kpi-strip, .alert-card, .setting-card, .scard, .role-card {
-    background: #ffffff !important;
-    border: 1px solid #e2e8f0 !important;
-  }
-
-  .page-title, .sec-title, .alert-title, .setting-title, .srow-label, .role-name {
-    color: #0f172a !important;
-  }
-
-  .kpi-label, .alert-desc, .alert-meta, .sec-desc, .srow-desc, .role-desc {
-    color: #64748b !important;
-  }
-
-  .filter-btn { background: #ffffff !important; }
-
-  .btn-teal {
-    background: #0ea5e9 !important;
-    color: #ffffff !important;
-  }
-
 </style>
 </head>
-<body>
+<body class="optionA optionA-utility">
 
 <nav class="util-nav">
   <div class="util-nav-top">

@@ -1,0 +1,24 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "ui": "tui",
+  "tasks": {
+    "prisma:generate": {
+      "cache": false,
+      "inputs": ["prisma/schema.prisma"]
+    },
+    "build": {
+      "dependsOn": ["^build", "prisma:generate"],
+      "outputs": [".next/**", "dist/**"]
+    },
+    "dev": {
+      "dependsOn": ["prisma:generate"],
+      "cache": false,
+      "persistent": true
+    },
+    "lint":      { "dependsOn": ["^lint"] },
+    "typecheck": { "dependsOn": ["^typecheck", "prisma:generate"] },
+    "clean": {
+      "cache": false
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "name": "@reuse360/db",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "prisma:generate": "prisma generate",
+    "migrate:dev":     "prisma migrate dev",
+    "migrate:deploy":  "prisma migrate deploy",
+    "db:seed":         "tsx prisma/seed.ts",
+    "studio":          "prisma studio"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.14.0"
+  },
+  "devDependencies": {
+    "prisma": "^5.14.0",
+    "tsx":    "^4.0.0",
+    "typescript": "^5.4.0"
+  },
+  "prisma": {
+    "schema": "./prisma/schema.prisma",
+    "seed":   "tsx prisma/seed.ts"
+  }
+}

@@ -1,0 +1,397 @@
+// ─────────────────────────────────────────────
+// ReUse360 Plus — Prisma Schema
+// PostgreSQL (Render Postgres or Fly.io)
+// ─────────────────────────────────────────────
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")   // for Supabase/PgBouncer if used later
+}
+
+// ── Enums ────────────────────────────────────
+
+enum UserRole {
+  ADMIN
+  ANALYST
+  ENFORCEMENT
+}
+
+enum ViolationType {
+  WRONG_DAY
+  WRONG_TIME
+  EXCESSIVE_USAGE
+  CONTINUOUS_FLOW
+  LEAK_DETECTED
+  PROHIBITED_IRRIGATION
+}
+
+enum ViolationStatus {
+  DETECTED
+  CONFIRMED
+  NOTIFIED
+  SR_CREATED
+  RESOLVED
+  DISMISSED
+}
+
+enum InspectionStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETE
+  CANCELLED
+  NO_ACCESS
+}
+
+enum PermitType {
+  IRRIGATION_SYSTEM
+  RECLAIMED_CONNECTION
+  TEMPORARY_WAIVER
+  NEW_LANDSCAPE
+}
+
+enum PermitStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  DENIED
+  EXPIRED
+  REVOKED
+}
+
+enum ComplaintSource {
+  CUSTOMER_PORTAL
+  PHONE
+  FIELD_OFFICER
+  AMI_TRIGGERED
+  HOA
+}
+
+enum ComplaintStatus {
+  OPEN
+  INVESTIGATING
+  RESOLVED
+  DUPLICATE
+  UNFOUNDED
+}
+
+enum AlertChannel {
+  EMAIL
+  SMS
+  PUSH
+  IN_APP
+}
+
+enum AlertSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+enum JobType {
+  BEACON_RANGE_READ
+  BEACON_FLOW_EXPORT
+  BEACON_CONSUMPTION
+  BEACON_BILLING_READ
+  BEACON_INTERVAL_READ
+  BEACON_LEAK_EXPORT
+  BEACON_ENDPOINT_STATUS
+  BEACON_FORMATC_READ
+  GIS_PARCEL_SYNC
+  VIOLATION_DETECTION
+  ALERT_DISPATCH
+  CITYWORKS_SR_CREATE
+  CITYWORKS_SR_SYNC
+}
+
+enum JobStatus {
+  QUEUED
+  RUNNING
+  COMPLETE
+  FAILED
+  RETRYING
+}
+
+// ── Models ───────────────────────────────────
+
+model User {
+  id          String    @id @default(uuid())
+  clerkId     String    @unique
+  email       String    @unique
+  firstName   String?
+  lastName    String?
+  role        UserRole  @default(ANALYST)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  inspections Inspection[] @relation("AssignedInspections")
+  permits     Permit[]     @relation("IssuedPermits")
+
+  @@index([clerkId])
+  @@index([email])
+  @@map("users")
+}
+
+model Parcel {
+  id                  String    @id @default(uuid())
+  parcelId            String    @unique  // PARCELID from Pinellas eGIS
+  siteAddress         String
+  city                String
+  zip                 String
+  useCode             String?
+  landUseCode         String?
+  isHomestead         Boolean   @default(false)
+  lat                 Decimal?  @db.Decimal(10, 7)
+  lon                 Decimal?  @db.Decimal(10, 7)
+  wateringZone        String?
+  irrigationDay       String?   // ODD | EVEN | MON | TUE | etc.
+  isReclaimedEligible Boolean   @default(false)
+  lastSyncedAt        DateTime  @default(now())
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  customerAccounts CustomerAccount[]
+
+  @@index([city])
+  @@index([wateringZone])
+  @@map("parcels")
+}
+
+model CustomerAccount {
+  id             String   @id @default(uuid())
+  accountId      String   @unique  // SAP billing account ID
+  meterId        String
+  parcelId       String
+  firstName      String
+  lastName       String
+  email          String?
+  phone          String?
+  serviceAddress String
+  isReclaimed    Boolean  @default(false)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  parcel     Parcel     @relation(fields: [parcelId], references: [parcelId])
+  violations Violation[]
+  alerts     Alert[]
+
+  @@index([meterId])
+  @@index([parcelId])
+  @@map("customer_accounts")
+}
+
+model MeterRead {
+  id                String    @id @default(uuid())
+  accountId         String
+  meterId           String
+  readValue         Decimal   @db.Decimal(12, 4)
+  readTime          DateTime
+  flow              Decimal?  @db.Decimal(12, 4)
+  flowUnit          String?   @default("gallons")
+  flowTime          DateTime?
+  label             String?   // potable | reclaimed
+  servicePointCycle String?
+  resolution        String?   // 15min | hourly | daily
+  rawPayload        String?   @db.Text
+  createdAt         DateTime  @default(now())
+
+  @@index([meterId, readTime])
+  @@index([accountId])
+  @@index([readTime])
+  @@map("meter_reads")
+}
+
+model Violation {
+  id               String          @id @default(uuid())
+  parcelId         String
+  accountId        String
+  meterId          String
+  violationType    ViolationType
+  status           ViolationStatus @default(DETECTED)
+  detectedAt       DateTime
+  confirmedAt      DateTime?
+  resolvedAt       DateTime?
+  readValue        Decimal         @db.Decimal(12, 4)
+  flowUnit         String?         @default("gallons")
+  wateringDay      String?
+  wateringZone     String?
+  ordinanceRef     String?         // FAC 40D-22
+  cityworksSrId    String?
+  notes            String?         @db.Text
+  detectedByJobId  String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  account     CustomerAccount @relation(fields: [accountId], references: [accountId])
+  inspections Inspection[]
+  complaints  Complaint[]
+  alerts      Alert[]
+
+  @@index([parcelId])
+  @@index([accountId])
+  @@index([status])
+  @@index([detectedAt])
+  @@index([violationType])
+  @@map("violations")
+}
+
+model Inspection {
+  id            String          @id @default(uuid())
+  violationId   String?
+  parcelId      String
+  accountId     String
+  address       String
+  assignedTo    String?
+  scheduledDate DateTime?
+  completedDate DateTime?
+  status        InspectionStatus @default(SCHEDULED)
+  findings      String?          @db.Text
+  photoUrls     String[]
+  cityworksWoId String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  violation  Violation? @relation(fields: [violationId], references: [id])
+  assignedUser User?    @relation("AssignedInspections", fields: [assignedTo], references: [id])
+  complaints Complaint[]
+
+  @@index([violationId])
+  @@index([parcelId])
+  @@index([status])
+  @@index([assignedTo])
+  @@map("inspections")
+}
+
+model Permit {
+  id             String       @id @default(uuid())
+  parcelId       String
+  accountId      String
+  permitType     PermitType
+  status         PermitStatus @default(SUBMITTED)
+  submittedAt    DateTime     @default(now())
+  approvedAt     DateTime?
+  expiresAt      DateTime?
+  issuedBy       String?
+  conditions     String?      @db.Text
+  attachmentUrls String[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  issuedByUser User? @relation("IssuedPermits", fields: [issuedBy], references: [id])
+
+  @@index([parcelId])
+  @@index([accountId])
+  @@index([status])
+  @@index([expiresAt])
+  @@map("permits")
+}
+
+model Complaint {
+  id                  String          @id @default(uuid())
+  reportedParcelId    String?
+  reporterAccountId   String?
+  address             String
+  source              ComplaintSource
+  status              ComplaintStatus @default(OPEN)
+  description         String          @db.Text
+  violationId         String?
+  inspectionId        String?
+  cityworksSrId       String?
+  resolvedAt          DateTime?
+  resolution          String?         @db.Text
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  violation  Violation?  @relation(fields: [violationId], references: [id])
+  inspection Inspection? @relation(fields: [inspectionId], references: [id])
+
+  @@index([reportedParcelId])
+  @@index([status])
+  @@index([violationId])
+  @@map("complaints")
+}
+
+model Alert {
+  id          String        @id @default(uuid())
+  accountId   String
+  parcelId    String?
+  violationId String?
+  leakAlertId String?
+  severity    AlertSeverity @default(INFO)
+  channel     AlertChannel
+  subject     String
+  body        String        @db.Text
+  sentAt      DateTime?
+  readAt      DateTime?
+  createdAt   DateTime      @default(now())
+
+  account   CustomerAccount @relation(fields: [accountId], references: [accountId])
+  violation Violation?      @relation(fields: [violationId], references: [id])
+
+  @@index([accountId])
+  @@index([violationId])
+  @@index([sentAt])
+  @@map("alerts")
+}
+
+model LeakAlert {
+  id                   String        @id @default(uuid())
+  accountId            String
+  meterId              String
+  parcelId             String?
+  detectedAt           DateTime
+  continuousFlowHours  Decimal?      @db.Decimal(6, 2)
+  estimatedLossGallons Decimal?      @db.Decimal(12, 2)
+  severity             AlertSeverity @default(WARNING)
+  resolvedAt           DateTime?
+  violationId          String?
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+
+  @@index([accountId])
+  @@index([detectedAt])
+  @@map("leak_alerts")
+}
+
+model ConnectorJob {
+  id               String    @id @default(uuid())
+  jobType          JobType
+  status           JobStatus @default(QUEUED)
+  payload          String?   @db.Text  // JSON
+  result           String?   @db.Text  // JSON
+  errorMessage     String?   @db.Text
+  attemptCount     Int       @default(0)
+  maxAttempts      Int       @default(3)
+  beaconJobUuid    String?
+  beaconStatusUrl  String?
+  scheduledAt      DateTime  @default(now())
+  startedAt        DateTime?
+  completedAt      DateTime?
+  createdAt        DateTime  @default(now())
+
+  @@index([status])
+  @@index([jobType])
+  @@index([scheduledAt])
+  @@map("connector_jobs")
+}
+
+model WateringZone {
+  id               String    @id @default(uuid())
+  zoneCode         String    @unique  // ODD | EVEN | MON | etc.
+  description      String
+  allowedDays      String[]
+  allowedStartTime String?   // "00:00"
+  allowedEndTime   String?   // "08:00"
+  ordinanceRef     String?
+  isActive         Boolean   @default(true)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@map("watering_zones")
+}

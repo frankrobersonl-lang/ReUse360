@@ -1,0 +1,13 @@
+{
+  "name": "@reuse360/auth",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./permissions": "./src/permissions.ts"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}

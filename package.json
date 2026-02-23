@@ -1,0 +1,32 @@
+{
+  "name": "reuse360",
+  "private": true,
+  "scripts": {
+    "dev":            "turbo run dev",
+    "dev:web":        "turbo run dev --filter=@reuse360/web",
+    "dev:worker":     "turbo run dev --filter=@reuse360/worker",
+    "build":          "turbo run build",
+    "lint":           "turbo run lint",
+    "typecheck":      "turbo run typecheck",
+    "db:generate":    "turbo run prisma:generate",
+    "db:migrate:dev": "pnpm --filter @reuse360/db exec prisma migrate dev",
+    "db:migrate":     "pnpm --filter @reuse360/db exec prisma migrate deploy",
+    "db:seed:dev":    "pnpm --filter @reuse360/db exec prisma db seed -- --env=development",
+    "db:seed:prod":   "pnpm --filter @reuse360/db exec prisma db seed -- --env=production",
+    "db:studio":      "pnpm --filter @reuse360/db exec prisma studio",
+    "db:reset":       "pnpm --filter @reuse360/db exec prisma migrate reset",
+    "setup":          "pnpm install && pnpm db:generate && pnpm db:migrate:dev && pnpm db:seed:dev",
+    "clean":          "turbo run clean && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "turbo":          "^2.0.0",
+    "typescript":     "^5.4.0",
+    "@types/node":    "^20.0.0",
+    "prettier":       "^3.2.0"
+  },
+  "packageManager": "pnpm@9.0.0",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  }
+}

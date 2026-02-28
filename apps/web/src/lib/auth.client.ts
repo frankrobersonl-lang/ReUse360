@@ -36,8 +36,8 @@ export function useReUse360Auth(): ClientAuthUser & { isLoaded: boolean } {
 
   const firstName   = user?.firstName ?? null;
   const lastName    = user?.lastName  ?? null;
-  const displayName = [firstName, lastName].filter(Boolean).join(' ') || user?.emailAddresses?.[0]?.emailAddress?.split('@')[0] ?? '';
-  const initials    = [firstName?.[0], lastName?.[0]].filter(Boolean).join('').toUpperCase() || displayName[0]?.toUpperCase() ?? '?';
+  const displayName = [firstName, lastName].filter(Boolean).join(' ') || (user?.emailAddresses?.[0]?.emailAddress?.split('@')[0] ?? '');
+  const initials    = [firstName?.[0], lastName?.[0]].filter(Boolean).join('').toUpperCase() || (displayName[0]?.toUpperCase() ?? '?');
 
   return {
     userId:      userId ?? '',

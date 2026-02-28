@@ -182,7 +182,7 @@ export default function IncidentMap({
 
   // ── Initialize Leaflet map ────────────────
   useEffect(() => {
-    if (!mapDivRef.current || mapRef.current) return;
+    if (!mapDivRef.current) return; if (mapRef.current) { mapRef.current.remove(); mapRef.current = null; }
 
     // Dynamic import — Leaflet must not run on SSR
     import('leaflet').then((L) => {

@@ -1,5 +1,5 @@
 import { requireEnforcement } from '@/lib/auth.server';
-import { IncidentMapLoader }  from '@/components/IncidentMapLoader';
+import IncidentMapLoader from '@/components/IncidentMapLoader';
 
 export default async function MapPage() {
   await requireEnforcement();

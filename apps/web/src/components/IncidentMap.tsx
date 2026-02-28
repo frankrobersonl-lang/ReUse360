@@ -128,7 +128,7 @@ export default function IncidentMap({
   const mapRef        = useRef<LeafletMap | null>(null);
   const mapDivRef     = useRef<HTMLDivElement>(null);
   const markersRef    = useRef<LayerGroup | null>(null);
-  const refreshTimerRef = useRef<ReturnType<typeof setInterval>>();
+  const refreshTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const { role, can } = useReUse360Auth();
 

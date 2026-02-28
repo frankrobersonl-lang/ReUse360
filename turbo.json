@@ -7,6 +7,7 @@
       "inputs": ["prisma/schema.prisma"]
     },
     "build": {
+      "env": ["DATABASE_URL", "DIRECT_URL", "CLERK_SECRET_KEY", "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY", "NEXT_PUBLIC_CLERK_SIGN_IN_URL", "NEXT_PUBLIC_CLERK_SIGN_UP_URL", "NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL", "NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL", "NEXT_PUBLIC_APP_URL"],
       "dependsOn": ["^build", "prisma:generate"],
       "outputs": [".next/**", "dist/**"]
     },

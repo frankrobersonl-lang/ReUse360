@@ -1,5 +1,5 @@
 import { auth } from '@clerk/nextjs/server';
-import { db } from '@reuse360/db';
+import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';

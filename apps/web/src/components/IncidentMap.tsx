@@ -247,7 +247,7 @@ export default function IncidentMap({
 
   // ── Render markers when incidents change ──
   useEffect(() => {
-    if (!mapRef.current || !markersRef.current) return;
+    if (!mapRef.current || !markersRef.current) { console.warn("MARKERS SKIP", !!mapRef.current, !!markersRef.current, incidents.length); return; } console.warn("MARKERS RENDER", incidents.length);
 
     import('leaflet').then((L) => {
       markersRef.current!.clearLayers();

@@ -135,6 +135,7 @@ export default function IncidentMap({
   const [incidents,    setIncidents]    = useState<IncidentGeoFeature[]>([]);
   const [loading,      setLoading]      = useState(true);
   const [error,        setError]        = useState<string | null>(null);
+  const [mapReady,     setMapReady]     = useState(false);
   const [lastRefresh,  setLastRefresh]  = useState<Date>(new Date());
   const [selectedType, setSelectedType] = useState<ViolationType | 'ALL'>('ALL');
   const [selectedStatus, setSelectedStatus] = useState<ViolationStatus | 'ALL'>('ALL');
@@ -233,6 +234,7 @@ export default function IncidentMap({
       L.control.scale({ imperial: true, metric: false }).addTo(map);
 
       mapRef.current = map;
+      setMapReady(true);
     });
 
     return () => {
@@ -457,7 +459,7 @@ export default function IncidentMap({
         markersRef.current!.addLayer(marker);
       });
     });
-  }, [incidents, role, can, onIncidentClick]);
+  }, [incidents, role, can, onIncidentClick, mapReady]);
 
   // ── Action handlers ───────────────────────
 

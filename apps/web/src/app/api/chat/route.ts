@@ -1,83 +1,40 @@
-import { auth } from '@clerk/nextjs/server';
-import { db } from '@reuse360/db';
-import { NextRequest, NextResponse } from 'next/server';
+import Anthropic from "@anthropic-ai/sdk";
+import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: NextRequest) {
-  const { userId } = await auth();
-  if (!userId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+const client = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+});
+
+const SYSTEM_PROMPT = `You are the ReUse360 Water Conservation Assistant for Pinellas County Utilities. Help customers with watering schedules and restrictions under SWFWMD FAC 40D-22.
+
+WATERING DAYS: ODD addresses = Wednesday and Saturday. EVEN addresses = Thursday and Sunday. Non-residential = Tuesday and Friday.
+WATERING HOURS: Only before 8AM or after 6PM. Watering 8AM-6PM is a violation.
+EXEMPTIONS: Hand watering with shutoff nozzle, drip irrigation, new sod within 30 days, freeze prevention.
+FINES: 1st=Warning, 2nd=$50, 3rd=$150, 4th+=$300.
+For billing or appeals call PCU: (727) 464-4000. Drought info: watermatters.org`;
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { messages } = body;
+    if (!messages || !Array.isArray(messages)) {
+      return NextResponse.json({ error: "messages array required" }, { status: 400 });
+    }
+    const response = await client.messages.create({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 1024,
+      system: SYSTEM_PROMPT,
+      messages: messages.map((msg: { role: string; content: string }) => ({
+        role: msg.role as "user" | "assistant",
+        content: msg.content,
+      })),
+    });
+    const assistantMessage = response.content[0].type === "text" ? response.content[0].text : "";
+    return NextResponse.json({ message: assistantMessage });
+  } catch (error) {
+    console.error("Chat API error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-
-  const url = req.nextUrl.searchParams;
-  const type = url.get('type') || undefined;
-  const status = url.get('status') || undefined;
-  const limit = Math.min(Number(url.get('limit') || '500'), 1000);
-  const sortBy = url.get('sortBy') || 'detectedAt';
-  const sortDir = (url.get('sortDir') || 'desc') as 'asc' | 'desc';
-
-  const violations = await db.violation.findMany({
-    take: limit,
-    orderBy: { [sortBy]: sortDir },
-    where: {
-      ...(type ? { violationType: type as any } : {}),
-      ...(status ? { status: status as any } : { status: { not: 'DISMISSED' } }),
-    },
-    include: {
-      account: {
-        select: {
-          accountId: true,
-          firstName: true,
-          lastName: true,
-          phone: true,
-          serviceAddress: true,
-          isReclaimed: true,
-          parcel: {
-            select: {
-              lat: true,
-              lon: true,
-            },
-          },
-        },
-      },
-    },
-  });
-
-  const data = violations
-    .filter((v) => v.account?.parcel?.lat && v.account?.parcel?.lon)
-    .map((v) => ({
-      id: v.id,
-      parcelId: v.parcelId,
-      accountId: v.accountId,
-      meterId: v.meterId,
-      violationType: v.violationType,
-      status: v.status,
-      detectedAt: v.detectedAt.toISOString(),
-      readValue: Number(v.readValue),
-      flowUnit: v.flowUnit || 'gallons',
-      wateringZone: v.wateringZone || undefined,
-      ordinanceRef: v.ordinanceRef || undefined,
-      cityworksSrId: v.cityworksSrId || undefined,
-      notes: v.notes || undefined,
-      address: v.account?.serviceAddress,
-      geometry: {
-        type: 'Point' as const,
-        coordinates: [
-          Number(v.account!.parcel!.lon),
-          Number(v.account!.parcel!.lat),
-        ],
-      },
-      account: v.account
-        ? {
-            firstName: v.account.firstName || undefined,
-            lastName: v.account.lastName || undefined,
-            phone: v.account.phone || undefined,
-            serviceAddress: v.account.serviceAddress,
-            isReclaimed: v.account.isReclaimed,
-          }
-        : undefined,
-    }));
-
-  return NextResponse.json({ data });
 }

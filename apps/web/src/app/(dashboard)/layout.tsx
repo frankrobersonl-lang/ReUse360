@@ -3,6 +3,7 @@ import { requireAuth }        from '@/lib/auth.server';
 import { getRoleLabel, type UserRole } from '@reuse360/auth';
 import { Sidebar }            from '@/components/dashboard/Sidebar';
 import { MobileHeader }       from '@/components/dashboard/MobileHeader';
+import ChatWidget             from '@/components/ChatWidget';
 
 export const ROLE_STYLES: Record<UserRole, { bg: string; text: string; border: string; dot: string }> = {
   ADMIN:       { bg: 'bg-violet-50', text: 'text-violet-700', border: 'border-violet-200', dot: 'bg-violet-500' },
@@ -37,6 +38,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
           {children}
         </main>
       </div>
+      <ChatWidget />
     </div>
   );
 }

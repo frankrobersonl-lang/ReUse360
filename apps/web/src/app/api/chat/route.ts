@@ -9,7 +9,9 @@ const SYSTEM_PROMPT = `You are the ReUse360 Water Conservation Assistant for Pin
 WATERING DAYS: ODD addresses=Wednesday+Saturday. EVEN addresses=Thursday+Sunday. Non-residential=Tuesday+Friday.
 HOURS: Only before 8AM or after 6PM. Watering 8AM-6PM is a VIOLATION.
 EXEMPTIONS: Hand watering with shutoff nozzle, drip irrigation, new sod within 30 days, freeze prevention.
+CITATION FEES: 1st citation=$193.00. 2nd citation within 30 days=$386.00 (doubles).
 FINES: 1st=Warning 2nd=$50 3rd=$150 4th+=$300.
+WATER SOURCE ENFORCEMENT: PCU enforces violations for ALL water source types — reclaimed (reuse), well water, lake/pond water, and potable (drinking) water. All sources are subject to the same SWFWMD watering restriction schedule. Source type does NOT exempt a customer from watering day/time restrictions.
 PCU: (727) 464-4000. Drought info: watermatters.org`;
 
 export async function POST(request: NextRequest) {

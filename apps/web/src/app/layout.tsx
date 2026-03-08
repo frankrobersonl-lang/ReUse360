@@ -17,7 +17,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
-        <body className={`${inter.variable} font-sans antialiased bg-slate-50`}>
+        <body className={`${inter.variable} font-sans antialiased bg-slate-50`} suppressHydrationWarning={true}>
           {children}
           <Toaster position="bottom-right" richColors />
           <ChatWidget />

@@ -395,3 +395,26 @@ model WateringZone {
 
   @@map("watering_zones")
 }
+
+model PatrolLog {
+  id                  String   @id @default(cuid())
+  officerNames        String[]
+  patrolDate          DateTime
+  mileage             Float    @default(0)
+  numberOfViolations  Int      @default(0)
+  citationsIssued     Int      @default(0)
+  warningsIssued      Int      @default(0)
+  violationOccurred   Boolean  @default(false)
+  outreachConducted   Boolean  @default(false)
+  waterSource         String?
+  notes               String?  @db.Text
+  shiftStart          String?
+  shiftEnd            String?
+  submittedById       String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@map("patrol_logs")
+  @@index([patrolDate])
+  @@index([submittedById])
+}

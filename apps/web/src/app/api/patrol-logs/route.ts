@@ -1,6 +1,6 @@
 import { auth } from '@clerk/nextjs/server'
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@reuse360/db'
+import { db } from '@/lib/db'
 
 export async function GET(req: NextRequest) {
   const { userId } = await auth()

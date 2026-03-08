@@ -6,9 +6,9 @@ import { useUser } from '@clerk/nextjs'
 
 const OFFICERS = [
   'Franklin Roberson',
-  'Officer 2',
-  'Officer 3',
-  'Officer 4',
+  'Ian Schollenberger',
+  'Chynna Courtney Cherry',
+]
 ]
 
 const WATER_SOURCES = ['Reclaimed', 'Potable', 'Well/Lake/Pond']

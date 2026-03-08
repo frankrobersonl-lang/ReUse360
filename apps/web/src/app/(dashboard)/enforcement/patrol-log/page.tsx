@@ -9,7 +9,7 @@ const OFFICERS = [
   'Ian Schollenberger',
   'Chynna Courtney Cherry',
 ]
-]
+
 
 const WATER_SOURCES = ['Reclaimed', 'Potable', 'Well/Lake/Pond']
 

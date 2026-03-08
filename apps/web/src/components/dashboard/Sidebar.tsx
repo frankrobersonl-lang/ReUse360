@@ -60,7 +60,8 @@ const NAV: NavItem[] = [
       { label: 'Inspections', href: '/enforcement/inspections', icon: 'ClipboardCheck',  roles: ['ADMIN', 'ANALYST', 'ENFORCEMENT'] },
       { label: 'Permits',     href: '/enforcement/permits',     icon: 'FileCheck',       roles: ['ADMIN', 'ENFORCEMENT'] },
       { label: 'Complaints',  href: '/enforcement/complaints',  icon: 'MessageSquare',   roles: ['ADMIN', 'ENFORCEMENT'] },
-      { label: 'Map',         href: '/enforcement/map',         icon: 'Map',             roles: ['ADMIN', 'ANALYST', 'ENFORCEMENT'] },
+      { label: 'Patrol Log', href: '/enforcement/patrol-log', icon: 'ClipboardList', roles: ['ADMIN', 'ENFORCEMENT'] },
+        { label: 'Map',         href: '/enforcement/map',         icon: 'Map',             roles: ['ADMIN', 'ANALYST', 'ENFORCEMENT'] },
     ],
   },
 ];

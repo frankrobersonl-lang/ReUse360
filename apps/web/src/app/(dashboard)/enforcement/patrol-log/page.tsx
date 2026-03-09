@@ -52,10 +52,10 @@ export default function PatrolLogPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
-          mileage: parseFloat(form.mileage) || 0,
-          numberOfViolations: parseInt(form.numberOfViolations) || 0,
-          citationsIssued: parseInt(form.citationsIssued) || 0,
-          warningsIssued: parseInt(form.warningsIssued) || 0,
+          mileage: Math.max(0, parseFloat(form.mileage) || 0),
+          numberOfViolations: Math.max(0, parseInt(form.numberOfViolations) || 0),
+          citationsIssued: Math.max(0, parseInt(form.citationsIssued) || 0),
+          warningsIssued: Math.max(0, parseInt(form.warningsIssued) || 0),
         }),
       })
       if (!res.ok) throw new Error('Failed to submit')
@@ -148,7 +148,7 @@ export default function PatrolLogPage() {
           </div>
           <div>
             <label className="text-xs text-slate-500 uppercase tracking-wide">Mileage</label>
-            <input type="number" placeholder="0" value={form.mileage}
+            <input type="number" placeholder="0" min="0" value={form.mileage}
               onChange={e => setForm(f => ({ ...f, mileage: e.target.value }))}
               className="mt-1 w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500"
             />
@@ -169,21 +169,21 @@ export default function PatrolLogPage() {
             <div className="grid grid-cols-3 gap-3">
               <div>
                 <label className="text-xs text-slate-500 uppercase tracking-wide"># Violations</label>
-                <input type="number" placeholder="0" value={form.numberOfViolations}
+                <input type="number" placeholder="0" min="0" value={form.numberOfViolations}
                   onChange={e => setForm(f => ({ ...f, numberOfViolations: e.target.value }))}
                   className="mt-1 w-full border border-slate-200 rounded-xl px-3 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500"
                 />
               </div>
               <div>
                 <label className="text-xs text-slate-500 uppercase tracking-wide">Citations</label>
-                <input type="number" placeholder="0" value={form.citationsIssued}
+                <input type="number" placeholder="0" min="0" value={form.citationsIssued}
                   onChange={e => setForm(f => ({ ...f, citationsIssued: e.target.value }))}
                   className="mt-1 w-full border border-slate-200 rounded-xl px-3 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500"
                 />
               </div>
               <div>
                 <label className="text-xs text-slate-500 uppercase tracking-wide">Warnings</label>
-                <input type="number" placeholder="0" value={form.warningsIssued}
+                <input type="number" placeholder="0" min="0" value={form.warningsIssued}
                   onChange={e => setForm(f => ({ ...f, warningsIssued: e.target.value }))}
                   className="mt-1 w-full border border-slate-200 rounded-xl px-3 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500"
                 />

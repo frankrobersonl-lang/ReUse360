@@ -19,14 +19,20 @@ export async function POST(req: NextRequest) {
   const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const body = await req.json()
+
+  const mileage = Math.max(0, Number(body.mileage) || 0)
+  const numberOfViolations = Math.max(0, Math.floor(Number(body.numberOfViolations) || 0))
+  const citationsIssued = Math.max(0, Math.floor(Number(body.citationsIssued) || 0))
+  const warningsIssued = Math.max(0, Math.floor(Number(body.warningsIssued) || 0))
+
   const log = await db.patrolLog.create({
     data: {
       officerNames: body.officerNames ?? [],
       patrolDate: new Date(body.patrolDate),
-      mileage: body.mileage ?? 0,
-      numberOfViolations: body.numberOfViolations ?? 0,
-      citationsIssued: body.citationsIssued ?? 0,
-      warningsIssued: body.warningsIssued ?? 0,
+      mileage,
+      numberOfViolations,
+      citationsIssued,
+      warningsIssued,
       violationOccurred: body.violationOccurred ?? false,
       outreachConducted: body.outreachConducted ?? false,
       waterSource: body.waterSource ?? null,

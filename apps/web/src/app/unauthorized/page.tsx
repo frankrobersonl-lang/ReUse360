@@ -7,7 +7,7 @@ export default function UnauthorizedPage() {
         <p className="text-teal-500 text-sm font-semibold uppercase tracking-widest mb-2">403</p>
         <h1 className="text-3xl font-bold text-white mb-3">Access Denied</h1>
         <p className="text-slate-400 mb-8 max-w-sm">
-          You don't have permission to access this page. Contact your administrator if you believe this is an error.
+          You don&apos;t have permission to access this page. Contact your administrator if you believe this is an error.
         </p>
         <Link
           href="/"

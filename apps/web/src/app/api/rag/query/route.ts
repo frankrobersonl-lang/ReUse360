@@ -23,16 +23,31 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'question is required' }, { status: 400 })
   }
 
-  const results = await queryRag(question.trim(), Math.min(limit, 10))
-  return NextResponse.json({ results })
+  if (!process.env.OPENAI_API_KEY) {
+    return NextResponse.json({ error: 'OPENAI_API_KEY not configured' }, { status: 503 })
+  }
+
+  try {
+    const results = await queryRag(question.trim(), Math.min(limit, 10))
+    return NextResponse.json({ results })
+  } catch (error) {
+    console.error('RAG query error:', error)
+    const message = error instanceof Error ? error.message : 'Unknown error'
+    return NextResponse.json({ error: 'Query failed', detail: message }, { status: 500 })
+  }
 }
 
 /**
  * Core RAG query function — also used by the chat route for inline context.
+ * Uses Prisma.$queryRawUnsafe with the limit inlined into the SQL string
+ * because Prisma parameterized queries cast $2 as text/BigInt, which
+ * PostgreSQL rejects for LIMIT clauses.
  */
 export async function queryRag(question: string, limit = 3): Promise<RagResult[]> {
   const embedding = await generateEmbedding(question)
   const vecLiteral = toVectorLiteral(embedding)
+
+  const safeLimit = Math.max(1, Math.min(Math.floor(limit), 10))
 
   const results = await db.$queryRawUnsafe<
     { id: string; title: string; content: string; source_type: string; similarity: number }[]
@@ -42,9 +57,8 @@ export async function queryRag(question: string, limit = 3): Promise<RagResult[]
      FROM rag_documents
      WHERE embedding IS NOT NULL
      ORDER BY embedding <=> $1::vector
-     LIMIT $2`,
+     LIMIT ${safeLimit}`,
     vecLiteral,
-    limit,
   )
 
   return results.map(r => ({

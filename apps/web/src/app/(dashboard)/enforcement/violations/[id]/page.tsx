@@ -4,6 +4,7 @@ import { notFound }            from 'next/navigation';
 import Link                    from 'next/link';
 import { cn }                  from '@/lib/utils';
 import { ConfirmViolationButton, CreateSRButton } from './ViolationActions';
+import { StatusProgression } from './StatusProgression';
 
 const STATUS_STYLES: Record<string, string> = {
   DETECTED:   'bg-amber-50  text-amber-700  border-amber-200',
@@ -57,11 +58,17 @@ export default async function ViolationDetailPage({ params }: Props) {
         <div>
           <h1 className="text-xl font-bold text-slate-900">{violation.violationType.replace(/_/g, ' ')}</h1>
           <p className="text-sm text-slate-500 mt-0.5">{violation.account.serviceAddress}</p>
+          {(violation as any).caseNumber && (
+            <p className="text-xs font-mono text-teal-600 mt-1">{(violation as any).caseNumber}</p>
+          )}
         </div>
         <span className={cn('px-3 py-1 rounded-full text-xs font-bold border', STATUS_STYLES[violation.status] ?? '')}>
           {violation.status}
         </span>
       </div>
+
+      {/* Status Progression */}
+      <StatusProgression violationId={id} currentStatus={violation.status} />
 
       {/* Detail grid */}
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">

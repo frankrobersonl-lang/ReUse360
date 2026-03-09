@@ -211,6 +211,7 @@ model MeterRead {
 
 model Violation {
   id               String          @id @default(uuid())
+  caseNumber       String?         @unique // PCU-YYYY-XXXX, auto-generated on create
   parcelId         String
   accountId        String
   meterId          String

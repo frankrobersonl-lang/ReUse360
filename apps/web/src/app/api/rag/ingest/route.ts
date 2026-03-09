@@ -3,9 +3,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { generateEmbedding, toVectorLiteral } from '@/lib/embeddings'
 
+export const maxDuration = 60
+
 export async function POST(req: NextRequest) {
   const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  if (!process.env.OPENAI_API_KEY) {
+    return NextResponse.json({ error: 'OPENAI_API_KEY not configured' }, { status: 503 })
+  }
 
   const body = await req.json()
   const { title, content, sourceType, sourceId } = body
@@ -17,36 +23,42 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  // Chunk long content (simple split at ~1000 chars on sentence boundaries)
-  const chunks = chunkText(content, 1000)
+  try {
+    // Chunk long content (simple split at ~1000 chars on sentence boundaries)
+    const chunks = chunkText(content, 1000)
 
-  const ids: string[] = []
-  for (let i = 0; i < chunks.length; i++) {
-    const chunk = chunks[i]
-    const embedding = await generateEmbedding(`${title}: ${chunk}`)
-    const vecLiteral = toVectorLiteral(embedding)
+    const ids: string[] = []
+    for (let i = 0; i < chunks.length; i++) {
+      const chunk = chunks[i]
+      const embedding = await generateEmbedding(`${title}: ${chunk}`)
+      const vecLiteral = toVectorLiteral(embedding)
 
-    // Insert via Prisma then update vector via raw SQL
-    const doc = await db.ragDocument.create({
-      data: {
-        title,
-        content: chunk,
-        sourceType,
-        sourceId: sourceId ?? null,
-        chunkIndex: i,
-      },
-    })
+      // Insert via Prisma then update vector via raw SQL
+      const doc = await db.ragDocument.create({
+        data: {
+          title,
+          content: chunk,
+          sourceType,
+          sourceId: sourceId ?? null,
+          chunkIndex: i,
+        },
+      })
 
-    await db.$executeRawUnsafe(
-      `UPDATE rag_documents SET embedding = $1::vector WHERE id = $2`,
-      vecLiteral,
-      doc.id,
-    )
+      await db.$executeRawUnsafe(
+        `UPDATE rag_documents SET embedding = $1::vector WHERE id = $2`,
+        vecLiteral,
+        doc.id,
+      )
 
-    ids.push(doc.id)
+      ids.push(doc.id)
+    }
+
+    return NextResponse.json({ ids, chunks: chunks.length }, { status: 201 })
+  } catch (error) {
+    console.error('RAG ingest error:', error)
+    const message = error instanceof Error ? error.message : 'Unknown error'
+    return NextResponse.json({ error: 'Ingest failed', detail: message }, { status: 500 })
   }
-
-  return NextResponse.json({ ids, chunks: chunks.length }, { status: 201 })
 }
 
 function chunkText(text: string, maxLen: number): string[] {

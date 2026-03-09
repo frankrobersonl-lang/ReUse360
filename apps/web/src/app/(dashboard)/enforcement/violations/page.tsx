@@ -2,6 +2,7 @@ import { requireEnforcement }  from '@/lib/auth.server';
 import { db }                  from '@/lib/db';
 import Link                    from 'next/link';
 import { cn }                  from '@/lib/utils';
+import { ViolationSearch }     from './ViolationSearch';
 
 const STATUS_STYLES: Record<string, string> = {
   DETECTED:   'bg-amber-50  text-amber-700  border-amber-200',
@@ -22,26 +23,39 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 interface Props {
-  searchParams: Promise<{ status?: string; type?: string }>;
+  searchParams: Promise<{ status?: string; type?: string; search?: string }>;
 }
 
 export default async function ViolationsPage({ searchParams }: Props) {
   await requireEnforcement();
-  const { status, type } = await searchParams;
+  const { status, type, search } = await searchParams;
 
-  const violations = await db.violation.findMany({
-    take:    50,
-    orderBy: { detectedAt: 'desc' },
-    where: {
-      ...(status ? { status: status as any } : { status: { not: 'DISMISSED' } }),
-      ...(type   ? { violationType: type as any } : {}),
-    },
-    include: {
-      account: { select: { serviceAddress: true, firstName: true, lastName: true, accountId: true } },
-    },
-  });
+  const where: Record<string, unknown> = {};
+  if (status) {
+    where.status = status;
+  } else {
+    where.status = { not: 'DISMISSED' };
+  }
+  if (type) where.violationType = type;
+  if (search?.trim()) {
+    where.OR = [
+      { caseNumber: { contains: search.trim(), mode: 'insensitive' } },
+      { account: { serviceAddress: { contains: search.trim(), mode: 'insensitive' } } },
+      { parcelId: { contains: search.trim(), mode: 'insensitive' } },
+    ];
+  }
 
-  const total = await db.violation.count({ where: { status: { not: 'DISMISSED' } } });
+  const [violations, total] = await Promise.all([
+    db.violation.findMany({
+      take: 50,
+      orderBy: { detectedAt: 'desc' },
+      where: where as any,
+      include: {
+        account: { select: { serviceAddress: true, firstName: true, lastName: true, accountId: true } },
+      },
+    }),
+    db.violation.count({ where: { status: { not: 'DISMISSED' } } }),
+  ]);
 
   return (
     <div className="space-y-5">
@@ -50,24 +64,39 @@ export default async function ViolationsPage({ searchParams }: Props) {
           <h1 className="text-xl font-bold text-slate-900">Violations</h1>
           <p className="text-sm text-slate-500">{total} active violations in system</p>
         </div>
+        <Link
+          href="/enforcement/violations/new"
+          className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium rounded-lg transition-colors"
+        >
+          + New Violation
+        </Link>
       </div>
+
+      {/* Search */}
+      <ViolationSearch currentSearch={search ?? ''} currentStatus={status ?? ''} />
 
       {/* Quick status filters */}
       <div className="flex flex-wrap gap-2">
-        {['', 'DETECTED', 'CONFIRMED', 'NOTIFIED', 'SR_CREATED', 'RESOLVED'].map(s => (
-          <Link
-            key={s}
-            href={s ? `/enforcement/violations?status=${s}` : '/enforcement/violations'}
-            className={cn(
-              'px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors',
-              (status ?? '') === s
-                ? 'bg-teal-600 text-white border-teal-600'
-                : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
-            )}
-          >
-            {s || 'All Active'}
-          </Link>
-        ))}
+        {['', 'DETECTED', 'CONFIRMED', 'NOTIFIED', 'SR_CREATED', 'RESOLVED'].map(s => {
+          const params = new URLSearchParams();
+          if (s) params.set('status', s);
+          if (search) params.set('search', search);
+          const href = `/enforcement/violations${params.toString() ? `?${params}` : ''}`;
+          return (
+            <Link
+              key={s}
+              href={href}
+              className={cn(
+                'px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors',
+                (status ?? '') === s
+                  ? 'bg-teal-600 text-white border-teal-600'
+                  : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
+              )}
+            >
+              {s || 'All Active'}
+            </Link>
+          );
+        })}
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
@@ -75,12 +104,12 @@ export default async function ViolationsPage({ searchParams }: Props) {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50/50">
-                <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Address</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Case #</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Address</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Account</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Type</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Detected</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">SR #</th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>
@@ -93,7 +122,10 @@ export default async function ViolationsPage({ searchParams }: Props) {
                 </tr>
               ) : violations.map(v => (
                 <tr key={v.id} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="px-5 py-3 font-medium text-slate-900 whitespace-nowrap">
+                  <td className="px-5 py-3 font-mono text-xs text-teal-700 font-medium whitespace-nowrap">
+                    {(v as any).caseNumber ?? '—'}
+                  </td>
+                  <td className="px-4 py-3 font-medium text-slate-900 whitespace-nowrap">
                     {v.account.serviceAddress}
                   </td>
                   <td className="px-4 py-3 text-slate-500 whitespace-nowrap">
@@ -109,9 +141,6 @@ export default async function ViolationsPage({ searchParams }: Props) {
                   </td>
                   <td className="px-4 py-3 text-slate-500 whitespace-nowrap tabular-nums">
                     {new Date(v.detectedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })}
-                  </td>
-                  <td className="px-4 py-3 text-slate-500 font-mono text-xs">
-                    {v.cityworksSrId ?? '—'}
                   </td>
                   <td className="px-4 py-3 text-right whitespace-nowrap">
                     <Link

@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { generateEmbedding, toVectorLiteral } from '@/lib/embeddings'
 
+export const maxDuration = 60 // allow up to 60s on Vercel
+
 const SEED_DOCUMENTS = [
   // ── SWFWMD FAC 40D-22 Rule Excerpts ──────────────
   {
@@ -52,41 +54,75 @@ export async function POST(req: NextRequest) {
   const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  // Check if already seeded
-  const existing = await db.ragDocument.count()
-  if (existing > 0) {
-    return NextResponse.json({
-      message: `RAG store already has ${existing} documents. Delete existing documents first to re-seed.`,
-      count: existing,
-    })
+  // Pre-flight checks
+  if (!process.env.OPENAI_API_KEY) {
+    return NextResponse.json(
+      { error: 'OPENAI_API_KEY is not configured. Add it to Vercel environment variables.' },
+      { status: 503 },
+    )
   }
 
-  const results: { id: string; title: string }[] = []
+  try {
+    // Ensure pgvector extension is enabled
+    await db.$executeRawUnsafe('CREATE EXTENSION IF NOT EXISTS vector')
 
-  for (const doc of SEED_DOCUMENTS) {
-    const embedding = await generateEmbedding(`${doc.title}: ${doc.content}`)
-    const vecLiteral = toVectorLiteral(embedding)
-
-    const record = await db.ragDocument.create({
-      data: {
-        title: doc.title,
-        content: doc.content,
-        sourceType: doc.sourceType,
-        chunkIndex: 0,
-      },
-    })
-
+    // Ensure embedding column exists
     await db.$executeRawUnsafe(
-      `UPDATE rag_documents SET embedding = $1::vector WHERE id = $2`,
-      vecLiteral,
-      record.id,
+      `DO $$ BEGIN
+        ALTER TABLE rag_documents ADD COLUMN embedding vector(1536);
+      EXCEPTION WHEN duplicate_column THEN NULL;
+      END $$`
     )
 
-    results.push({ id: record.id, title: doc.title })
-  }
+    // Check if already seeded
+    const existing = await db.ragDocument.count()
+    if (existing > 0) {
+      return NextResponse.json({
+        message: `RAG store already has ${existing} documents. Delete existing documents first to re-seed.`,
+        count: existing,
+      })
+    }
 
-  return NextResponse.json({
-    message: `Seeded ${results.length} RAG documents`,
-    documents: results,
-  }, { status: 201 })
+    const results: { id: string; title: string }[] = []
+
+    for (const doc of SEED_DOCUMENTS) {
+      const embedding = await generateEmbedding(`${doc.title}: ${doc.content}`)
+      const vecLiteral = toVectorLiteral(embedding)
+
+      const record = await db.ragDocument.create({
+        data: {
+          title: doc.title,
+          content: doc.content,
+          sourceType: doc.sourceType,
+          chunkIndex: 0,
+        },
+      })
+
+      await db.$executeRawUnsafe(
+        `UPDATE rag_documents SET embedding = $1::vector WHERE id = $2`,
+        vecLiteral,
+        record.id,
+      )
+
+      results.push({ id: record.id, title: doc.title })
+    }
+
+    // Create IVFFlat index if it doesn't exist (needs at least 1 row)
+    try {
+      await db.$executeRawUnsafe(
+        `CREATE INDEX IF NOT EXISTS rag_documents_embedding_idx ON rag_documents USING ivfflat (embedding vector_cosine_ops) WITH (lists = 10)`
+      )
+    } catch {
+      // Index creation can fail if not enough rows; cosine search still works via sequential scan
+    }
+
+    return NextResponse.json({
+      message: `Seeded ${results.length} RAG documents`,
+      documents: results,
+    }, { status: 201 })
+  } catch (error) {
+    console.error('RAG seed error:', error)
+    const message = error instanceof Error ? error.message : 'Unknown error'
+    return NextResponse.json({ error: 'Seed failed', detail: message }, { status: 500 })
+  }
 }

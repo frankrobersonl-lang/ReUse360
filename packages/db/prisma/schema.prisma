@@ -4,13 +4,15 @@
 // ─────────────────────────────────────────────
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")   // for Supabase/PgBouncer if used later
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  directUrl  = env("DIRECT_URL")   // for Supabase/PgBouncer if used later
+  extensions = [vector]
 }
 
 // ── Enums ────────────────────────────────────
@@ -457,4 +459,19 @@ model ChatMessage {
   @@index([sessionId])
   @@index([createdAt])
   @@map("chat_messages")
+}
+
+// RAG document store — embedding vector column added via raw SQL (vector(1536))
+model RagDocument {
+  id         String   @id @default(cuid())
+  title      String
+  content    String   @db.Text
+  sourceType String   // "violation_record" | "ordinance" | "policy" | "faq"
+  sourceId   String?  // optional link to source record
+  chunkIndex Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  @@index([sourceType])
+  @@index([createdAt])
+  @@map("rag_documents")
 }

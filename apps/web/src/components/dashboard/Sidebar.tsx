@@ -37,6 +37,7 @@ const NAV: NavItem[] = [
       { label: 'Ordinances', href: '/admin/ordinances',  icon: 'Scale',         roles: ['ADMIN'] },
       { label: 'Connectors', href: '/admin/settings',    icon: 'Plug',          roles: ['ADMIN'] },
       { label: 'Audit Log',  href: '/admin/audit-log',   icon: 'ClipboardList', roles: ['ADMIN'] },
+      { label: 'Chat Logs', href: '/admin/chat-logs',  icon: 'MessageSquare', roles: ['ADMIN'] },
       { label: 'Job Queue',  href: '/admin/jobs',        icon: 'Activity',      roles: ['ADMIN'] },
     ],
   },

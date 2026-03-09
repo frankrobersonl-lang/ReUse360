@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 
 interface Message {
   role: "user" | "assistant";
@@ -17,11 +17,27 @@ export default function ChatWidget() {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  const logMessage = useCallback(async (role: string, content: string, currentSessionId: string | null) => {
+    try {
+      const res = await fetch("/api/chat-sessions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId: currentSessionId, role, content }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return data.sessionId as string;
+      }
+    } catch {}
+    return currentSessionId;
+  }, []);
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
@@ -30,6 +46,10 @@ export default function ChatWidget() {
     setMessages(updatedMessages);
     setInput("");
     setIsLoading(true);
+
+    const sid = await logMessage("user", input.trim(), sessionId);
+    if (sid) setSessionId(sid);
+
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
@@ -38,10 +58,14 @@ export default function ChatWidget() {
       });
       if (!response.ok) throw new Error("API request failed");
       const data = await response.json();
-      setMessages([...updatedMessages, { role: "assistant", content: data.message }]);
+      const reply = data.message;
+      setMessages([...updatedMessages, { role: "assistant", content: reply }]);
+      await logMessage("assistant", reply, sid);
     } catch (error) {
       console.error("Chat error:", error);
-      setMessages([...updatedMessages, { role: "assistant", content: "I'm sorry, I encountered an error. Please try again or contact PCU at (727) 464-4000." }]);
+      const errMsg = "I'm sorry, I encountered an error. Please try again or contact PCU at (727) 464-4000.";
+      setMessages([...updatedMessages, { role: "assistant", content: errMsg }]);
+      await logMessage("assistant", errMsg, sid);
     } finally {
       setIsLoading(false);
     }

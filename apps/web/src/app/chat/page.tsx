@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { useUser } from '@clerk/nextjs';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -19,16 +20,34 @@ const QUICK_QUESTIONS = [
 ];
 
 export default function PublicChatPage() {
+  const { isSignedIn } = useUser();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [phaseOpen, setPhaseOpen] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
+
+  const logMessage = useCallback(async (role: string, content: string, currentSessionId: string | null) => {
+    if (!isSignedIn) return currentSessionId;
+    try {
+      const res = await fetch('/api/chat-sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId: currentSessionId, role, content }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return data.sessionId as string;
+      }
+    } catch {}
+    return currentSessionId;
+  }, [isSignedIn]);
 
   const send = async (text: string) => {
     if (!text.trim() || loading) return;
@@ -37,6 +56,10 @@ export default function PublicChatPage() {
     setMessages(updated);
     setInput('');
     setLoading(true);
+
+    // Log user message
+    const sid = await logMessage('user', text.trim(), sessionId);
+    if (sid) setSessionId(sid);
 
     try {
       const res = await fetch('/api/chat', {
@@ -49,14 +72,16 @@ export default function PublicChatPage() {
       if (!res.ok) throw new Error('API error');
       const data = await res.json();
       const reply = data.content?.[0]?.text
+        || data.message
         || data.text
         || 'I apologize, I could not process that. Please call PCU at (727) 464-4000.';
       setMessages([...updated, { role: 'assistant', content: reply }]);
+      // Log assistant reply
+      await logMessage('assistant', reply, sid);
     } catch {
-      setMessages([...updated, {
-        role: 'assistant',
-        content: 'I am having trouble connecting right now. For immediate assistance, please call Pinellas County Utilities at (727) 464-4000.',
-      }]);
+      const errMsg = 'I am having trouble connecting right now. For immediate assistance, please call Pinellas County Utilities at (727) 464-4000.';
+      setMessages([...updated, { role: 'assistant', content: errMsg }]);
+      await logMessage('assistant', errMsg, sid);
     } finally {
       setLoading(false);
       inputRef.current?.focus();

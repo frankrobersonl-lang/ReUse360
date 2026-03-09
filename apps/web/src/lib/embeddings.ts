@@ -1,9 +1,16 @@
 import OpenAI from 'openai'
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
-
 const EMBEDDING_MODEL = 'text-embedding-3-small'
 const EMBEDDING_DIMENSIONS = 1536
+
+let _openai: OpenAI | null = null
+
+function getClient(): OpenAI {
+  if (!_openai) {
+    _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+  }
+  return _openai
+}
 
 /**
  * Generate an embedding vector for a text string.
@@ -15,7 +22,7 @@ export async function generateEmbedding(text: string): Promise<number[]> {
   const input = text.replace(/\n/g, ' ').trim()
   if (!input) throw new Error('Cannot embed empty text')
 
-  const response = await openai.embeddings.create({
+  const response = await getClient().embeddings.create({
     model: EMBEDDING_MODEL,
     input,
     dimensions: EMBEDDING_DIMENSIONS,

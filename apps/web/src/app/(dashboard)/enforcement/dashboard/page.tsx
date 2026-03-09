@@ -1,6 +1,7 @@
 import { requireEnforcement }  from '@/lib/auth.server';
 import { db }                  from '@/lib/db';
 import { KpiCard }             from '@/components/ui/KpiCard';
+import { ParcelSearch }        from '@/components/enforcement/ParcelSearch';
 import { AlertTriangle, ClipboardCheck, FileCheck, MessageSquare, Droplets } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -55,6 +56,9 @@ export default async function EnforcementDashboardPage() {
           Welcome back, {user.firstName ?? user.email.split('@')[0]} — {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
         </p>
       </div>
+
+      {/* Parcel / Address Lookup */}
+      <ParcelSearch />
 
       {/* KPI grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

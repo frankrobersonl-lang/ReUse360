@@ -419,6 +419,18 @@ model PatrolLog {
   @@index([submittedById])
 }
 
+model ParcelLookup {
+  id         String   @id @default(cuid())
+  officerId  String
+  query      String
+  resultData String   @db.Text // JSON
+  createdAt  DateTime @default(now())
+
+  @@index([officerId])
+  @@index([createdAt])
+  @@map("parcel_lookups")
+}
+
 model ChatSession {
   id        String   @id @default(cuid())
   userId    String?

@@ -50,6 +50,7 @@ export const ROLE_ROUTES: Record<UserRole, string[]> = {
     '/enforcement/complaints',
     '/enforcement/complaints/[id]',
     '/enforcement/map',
+    '/enforcement/patrol-log',
   ],
 
   ANALYST: [
@@ -86,6 +87,7 @@ export const ROLE_ROUTES: Record<UserRole, string[]> = {
     '/enforcement/complaints',
     '/enforcement/complaints/[id]',
     '/enforcement/map',
+    '/enforcement/patrol-log',
   ],
 };
 

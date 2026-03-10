@@ -5,7 +5,9 @@ import { QUEUE_NAMES }          from '../queue-names';
 import { SrSyncService }        from './sr-sync.service';
 
 export interface SrSyncJobData {
-  /** Sync a specific violation's SR, or poll all open SRs if omitted */
+  /** 'create' = create SR for a violation, 'sync' = poll status of open SRs */
+  action: 'create' | 'sync';
+  /** Required for 'create', optional for 'sync' (sync specific violation) */
   violationId?: string;
 }
 
@@ -18,22 +20,22 @@ export class SrSyncProcessor extends WorkerHost {
   }
 
   async process(job: Job<SrSyncJobData>): Promise<void> {
-    this.logger.log(`Processing job ${job.id} — Cityworks SR sync`);
+    const { action } = job.data;
+    this.logger.log(`Processing job ${job.id} — Cityworks SR ${action}`);
 
     const connectorJob = await this.service.createConnectorJob(job.data);
 
     try {
       await this.service.markJobRunning(connectorJob.id);
 
-      // TODO: 1. Find violations with status SR_CREATED and a cityworksSrId
-      // TODO: 2. For each, call Cityworks REST API to get SR status
-      // TODO: 3. If Cityworks reports SR closed/resolved, update violation to RESOLVED
-      // TODO: 4. Log sync results to ConnectorJob.result
-
-      const result = await this.service.syncServiceRequests(job.data);
+      const result = action === 'create'
+        ? await this.service.createServiceRequest(job.data.violationId!)
+        : await this.service.syncServiceRequests(job.data.violationId);
 
       await this.service.markJobComplete(connectorJob.id, result);
-      this.logger.log(`Job ${job.id} complete — synced ${result.synced} SRs`);
+      this.logger.log(
+        `Job ${job.id} complete — created: ${result.created}, synced: ${result.synced}, resolved: ${result.resolved}`,
+      );
     } catch (error) {
       await this.service.markJobFailed(connectorJob.id, error);
       throw error;

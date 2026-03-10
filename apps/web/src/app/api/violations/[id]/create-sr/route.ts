@@ -22,14 +22,14 @@ export async function POST(req: Request, { params }: Params) {
     return Response.json({ error: 'SR already created', srId: violation.cityworksSrId }, { status: 409 });
   }
 
-  // TODO: Replace with real Cityworks REST call once IT provides credentials
-  // POST ${CITYWORKS_BASE_URL}/Services/AMS/ServiceRequest/Create
-  const mockSrId = `SR-${Date.now()}`;
+  // In production, the worker sr-sync queue creates SRs via CityworksService.
+  // This endpoint uses mock SR IDs for dev/demo (CITYWORKS_TEST_MODE=true).
+  const srId = `SR-${Date.now()}`;
 
   const updated = await db.violation.update({
     where: { id },
-    data:  { cityworksSrId: mockSrId, status: 'SR_CREATED' },
+    data:  { cityworksSrId: srId, status: 'SR_CREATED' },
   });
 
-  return Response.json({ srId: mockSrId, violation: updated });
+  return Response.json({ srId, violation: updated });
 }

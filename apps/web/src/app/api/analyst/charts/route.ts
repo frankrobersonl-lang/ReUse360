@@ -3,8 +3,8 @@ import { guardApi } from '@/lib/auth.server';
 import { db } from '@/lib/db';
 
 export async function GET() {
-  const authError = await guardApi('analytics:read');
-  if (authError) return authError;
+  const guard = await guardApi('analytics:read');
+  if (!guard.ok) return guard.response;
 
   const now = new Date();
   const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);

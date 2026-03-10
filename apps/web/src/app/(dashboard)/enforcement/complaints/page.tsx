@@ -1,6 +1,7 @@
 import { requireEnforcement } from '@/lib/auth.server';
 import { KpiCard } from '@/components/ui/KpiCard';
 import db from '@/lib/db';
+import Link from 'next/link';
 import { MessageSquare, Search, CheckCircle, Copy, XCircle } from 'lucide-react';
 
 export default async function EnforcementComplaintsPage() {
@@ -47,7 +48,9 @@ export default async function EnforcementComplaintsPage() {
               <tr><td colSpan={6} className="px-4 py-8 text-center text-slate-400">No complaints filed yet. Complaints can be submitted via customer portal, phone, or field officers.</td></tr>
             ) : complaints.map((c) => (
               <tr key={c.id} className="hover:bg-slate-50 transition-colors">
-                <td className="px-4 py-3 font-medium text-slate-900">{c.address}</td>
+                <td className="px-4 py-3 font-medium">
+                      <Link href={`/enforcement/complaints/${c.id}`} className="text-teal-600 hover:text-teal-700">{c.address}</Link>
+                    </td>
                 <td className="px-4 py-3">
                   <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700">{c.source.replace(/_/g, ' ')}</span>
                 </td>

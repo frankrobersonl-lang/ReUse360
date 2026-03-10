@@ -1,11 +1,11 @@
 import { requireAnalyst }  from '@/lib/auth.server';
 import { db }              from '@/lib/db';
 import { KpiCard }         from '@/components/ui/KpiCard';
+import { AnalystCharts }   from '@/components/charts/AnalystCharts';
 import { TrendingUp, Droplets, BarChart3, AlertTriangle } from 'lucide-react';
-import Link from 'next/link';
 
 export default async function AnalystDashboardPage() {
-  const user = await requireAnalyst();
+  await requireAnalyst();
 
   const [totalViolations, totalMeterReads, weekViolations, reclaimedAccounts] = await Promise.all([
     db.violation.count({ where: { status: { not: 'DISMISSED' } } }),
@@ -30,14 +30,7 @@ export default async function AnalystDashboardPage() {
         <KpiCard label="Reclaimed Accounts" value={reclaimedAccounts} icon={BarChart3}   variant="success" sub="Active connections" />
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
-        <BarChart3 className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-        <p className="text-sm font-medium text-slate-600 mb-1">Charts Coming Next Sprint</p>
-        <p className="text-xs text-slate-400">Usage trends, zone comparisons, and reclaimed vs potable will render here</p>
-        <Link href="/enforcement/violations" className="inline-block mt-4 text-xs text-teal-600 font-medium hover:text-teal-700">
-          View violation data →
-        </Link>
-      </div>
+      <AnalystCharts />
     </div>
   );
 }

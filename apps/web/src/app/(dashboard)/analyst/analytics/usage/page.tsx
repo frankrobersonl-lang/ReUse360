@@ -1,5 +1,6 @@
 import { requireAnalyst } from '@/lib/auth.server';
 import { KpiCard } from '@/components/ui/KpiCard';
+import { ZoneUsageChartSection } from '@/components/charts/ZoneUsageChartSection';
 import db from '@/lib/db';
 import { Droplets, MapPin, Home } from 'lucide-react';
 
@@ -12,6 +13,11 @@ export default async function UsageByZonePage() {
     db.parcel.groupBy({ by: ['wateringZone'], _count: { id: true }, orderBy: { _count: { id: 'desc' } } }),
   ]);
 
+  const zoneChartData = zoneCounts.map((z) => ({
+    zone: z.wateringZone ?? 'Unassigned',
+    count: z._count.id,
+  }));
+
   return (
     <div className="space-y-8">
       <div>
@@ -23,6 +29,9 @@ export default async function UsageByZonePage() {
         <KpiCard label="Reclaimed Eligible" value={reclaimedEligible} sub="Infrastructure available" icon={Droplets} variant="success" />
         <KpiCard label="Zone Groups" value={zoneCounts.length} sub="Distinct watering zones" icon={MapPin} />
       </div>
+
+      <ZoneUsageChartSection data={zoneChartData} />
+
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-slate-50 border-b border-slate-200">

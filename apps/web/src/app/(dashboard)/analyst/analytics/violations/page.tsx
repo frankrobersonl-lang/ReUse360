@@ -1,5 +1,6 @@
 import { requireAnalyst } from '@/lib/auth.server';
 import { KpiCard } from '@/components/ui/KpiCard';
+import { ViolationTrendsCharts } from '@/components/charts/ViolationTrendsCharts';
 import db from '@/lib/db';
 import { TrendingUp, AlertTriangle, ShieldAlert, CheckCircle } from 'lucide-react';
 
@@ -8,17 +9,42 @@ export default async function ViolationTrendsPage() {
 
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
   const sixtyDaysAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
+  const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
 
-  const [total, last30, prev30, resolved, byType, byStatus] = await Promise.all([
+  const [total, last30, prev30, resolved, byType, byStatus, recentViolations] = await Promise.all([
     db.violation.count(),
     db.violation.count({ where: { detectedAt: { gte: thirtyDaysAgo } } }),
     db.violation.count({ where: { detectedAt: { gte: sixtyDaysAgo, lt: thirtyDaysAgo } } }),
     db.violation.count({ where: { status: 'RESOLVED' } }),
     db.violation.groupBy({ by: ['violationType'], _count: { id: true }, orderBy: { _count: { id: 'desc' } } }),
     db.violation.groupBy({ by: ['status'], _count: { id: true }, orderBy: { _count: { id: 'desc' } } }),
+    db.violation.findMany({
+      where: { detectedAt: { gte: ninetyDaysAgo } },
+      select: { detectedAt: true, violationType: true },
+      orderBy: { detectedAt: 'asc' },
+    }),
   ]);
 
   const trendPct = prev30 > 0 ? Math.round(((last30 - prev30) / prev30) * 100) : 0;
+
+  // Build weekly trend data server-side
+  const weekMap = new Map<string, number>();
+  for (const v of recentViolations) {
+    const d = new Date(v.detectedAt);
+    const weekStart = new Date(d);
+    weekStart.setDate(d.getDate() - d.getDay());
+    const key = weekStart.toISOString().slice(0, 10);
+    weekMap.set(key, (weekMap.get(key) ?? 0) + 1);
+  }
+  const trendData = Array.from(weekMap.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([week, count]) => ({ week, count }));
+
+  // Build type breakdown data server-side
+  const typeData = byType.map((v) => ({
+    type: v.violationType.replace(/_/g, ' '),
+    count: v._count.id,
+  }));
 
   return (
     <div className="space-y-8">
@@ -32,6 +58,9 @@ export default async function ViolationTrendsPage() {
         <KpiCard label="Prior 30 Days" value={prev30} sub="Comparison period" icon={ShieldAlert} />
         <KpiCard label="Resolved" value={resolved} sub="Closed violations" icon={CheckCircle} variant="success" />
       </div>
+
+      <ViolationTrendsCharts trendData={trendData} typeData={typeData} />
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">By Violation Type</h2>

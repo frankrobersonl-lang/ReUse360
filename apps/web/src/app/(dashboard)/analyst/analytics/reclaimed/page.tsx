@@ -1,18 +1,41 @@
 import { requireAnalyst } from '@/lib/auth.server';
 import { KpiCard } from '@/components/ui/KpiCard';
+import { UsageSplitChartSection } from '@/components/charts/UsageSplitChartSection';
 import db from '@/lib/db';
 import { Recycle, Droplets, Home, TrendingUp } from 'lucide-react';
 
 export default async function ReclaimedWaterPage() {
   await requireAnalyst();
 
-  const [totalAccounts, reclaimedAccounts, eligibleParcels] = await Promise.all([
+  const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
+
+  const [totalAccounts, reclaimedAccounts, eligibleParcels, meterReads] = await Promise.all([
     db.customerAccount.count({ where: { isActive: true } }),
     db.customerAccount.count({ where: { isReclaimed: true, isActive: true } }),
     db.parcel.count({ where: { isReclaimedEligible: true } }),
+    db.meterRead.findMany({
+      where: { readTime: { gte: ninetyDaysAgo } },
+      select: { flow: true, label: true },
+    }),
   ]);
 
   const adoptionRate = totalAccounts > 0 ? ((reclaimedAccounts / totalAccounts) * 100).toFixed(1) : '0.0';
+
+  // Aggregate flow by type for pie chart
+  let potableFlow = 0;
+  let reclaimedFlow = 0;
+  for (const r of meterReads) {
+    const flow = r.flow ? Number(r.flow) : 0;
+    if (r.label === 'reclaimed') {
+      reclaimedFlow += flow;
+    } else {
+      potableFlow += flow;
+    }
+  }
+  const usageSplitData = [
+    { name: 'Potable', value: Math.round(potableFlow) },
+    { name: 'Reclaimed', value: Math.round(reclaimedFlow) },
+  ];
 
   const reclaimedCustomers = await db.customerAccount.findMany({
     where: { isReclaimed: true, isActive: true },
@@ -33,6 +56,9 @@ export default async function ReclaimedWaterPage() {
         <KpiCard label="Eligible Parcels" value={eligibleParcels} sub="Infrastructure available" icon={Home} />
         <KpiCard label="Total Active" value={totalAccounts} sub="All active accounts" icon={Droplets} />
       </div>
+
+      <UsageSplitChartSection data={usageSplitData} />
+
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-slate-50 border-b border-slate-200">

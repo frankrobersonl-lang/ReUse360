@@ -1,6 +1,7 @@
 import { requireEnforcement } from '@/lib/auth.server';
 import { KpiCard } from '@/components/ui/KpiCard';
 import db from '@/lib/db';
+import Link from 'next/link';
 import { FileCheck, Clock, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 
 export default async function EnforcementPermitsPage() {
@@ -47,7 +48,11 @@ export default async function EnforcementPermitsPage() {
               <tr><td colSpan={6} className="px-4 py-8 text-center text-slate-400">No permits submitted yet.</td></tr>
             ) : permits.map((p) => (
               <tr key={p.id} className="hover:bg-slate-50 transition-colors">
-                <td className="px-4 py-3 font-medium text-slate-900">{p.permitType.replace(/_/g, ' ')}</td>
+                <td className="px-4 py-3 font-medium">
+                  <Link href={`/enforcement/permits/${p.id}`} className="text-teal-600 hover:text-teal-700">
+                    {p.permitType.replace(/_/g, ' ')}
+                  </Link>
+                </td>
                 <td className="px-4 py-3 text-slate-600">{p.accountId}</td>
                 <td className="px-4 py-3">
                   <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${p.status === 'APPROVED' ? 'bg-green-50 text-green-700' : p.status === 'DENIED' || p.status === 'REVOKED' ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700'}`}>{p.status.replace(/_/g, ' ')}</span>

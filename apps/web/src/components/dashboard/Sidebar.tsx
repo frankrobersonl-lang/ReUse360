@@ -11,14 +11,15 @@ import {
   FileCheck, MessageSquare, Map, BarChart3, Droplets,
   TrendingUp, Recycle, Building2, Gauge, FileText,
   Settings2, Users, Scale, Plug, ClipboardList,
-  Activity, ShieldAlert, ChevronDown,
+  Activity, ShieldAlert, ChevronDown, Bell,
 } from 'lucide-react';
+import { NotificationBell } from './NotificationBell';
 
 const ICON_MAP: Record<string, React.ElementType> = {
   LayoutDashboard, AlertTriangle, ClipboardCheck, FileCheck,
   MessageSquare, Map, BarChart3, Droplets, TrendingUp, Recycle,
   Building2, Gauge, FileText, Settings2, Users, Scale, Plug,
-  ClipboardList, Activity, ShieldAlert,
+  ClipboardList, Activity, ShieldAlert, Bell,
 };
 
 interface NavItem {
@@ -39,6 +40,7 @@ const NAV: NavItem[] = [
       { label: 'Audit Log',  href: '/admin/audit-log',   icon: 'ClipboardList', roles: ['ADMIN'] },
       { label: 'Chat Logs', href: '/admin/chat-logs',  icon: 'MessageSquare', roles: ['ADMIN'] },
       { label: 'Job Queue',  href: '/admin/jobs',        icon: 'Activity',      roles: ['ADMIN'] },
+      { label: 'Notifications', href: '/admin/notifications', icon: 'Bell',      roles: ['ADMIN'] },
     ],
   },
   {
@@ -83,18 +85,21 @@ export function Sidebar({ user, displayName, initials, roleStyle }: SidebarProps
 
   return (
     <aside className="hidden lg:flex flex-col w-64 shrink-0 bg-white border-r border-slate-200">
-      {/* Logo */}
-      <div className="flex items-center gap-3 px-5 py-5 border-b border-slate-100">
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center shadow-sm">
-          <svg viewBox="0 0 24 24" className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M12 2C8 2 4 6 4 10c0 5.25 8 12 8 12s8-6.75 8-12c0-4-4-8-8-8z"/>
-            <circle cx="12" cy="10" r="2.5"/>
-          </svg>
+      {/* Logo + Notification Bell */}
+      <div className="flex items-center justify-between px-5 py-5 border-b border-slate-100">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center shadow-sm">
+            <svg viewBox="0 0 24 24" className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 2C8 2 4 6 4 10c0 5.25 8 12 8 12s8-6.75 8-12c0-4-4-8-8-8z"/>
+              <circle cx="12" cy="10" r="2.5"/>
+            </svg>
+          </div>
+          <div>
+            <p className="text-sm font-bold text-slate-900 leading-tight">ReUse360</p>
+            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Plus</p>
+          </div>
         </div>
-        <div>
-          <p className="text-sm font-bold text-slate-900 leading-tight">ReUse360</p>
-          <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Plus</p>
-        </div>
+        <NotificationBell />
       </div>
 
       {/* Role badge */}

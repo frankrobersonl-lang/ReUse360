@@ -22,6 +22,7 @@ export const ROLE_ROUTES: Record<UserRole, string[]> = {
     '/admin/ordinances',
     '/admin/ordinances/[id]',
     '/admin/audit-log',
+    '/admin/notifications',
     '/admin/chat-logs',
     '/admin/jobs',
     '/admin/jobs/[id]',

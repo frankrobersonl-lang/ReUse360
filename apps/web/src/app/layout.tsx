@@ -11,6 +11,7 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 export const metadata: Metadata = {
   title:       'ReUse360 Plus — Water Conservation Platform',
   description: 'AMI-driven irrigation enforcement and reclaimed water management for Pinellas County Utilities',
+  icons: { icon: '/favicon.svg' },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

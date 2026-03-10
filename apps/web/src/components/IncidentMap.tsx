@@ -202,10 +202,11 @@ export default function IncidentMap({
         scrollWheelZoom: true,
       });
 
-      // Base tile layer — OpenStreetMap
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-        maxZoom: 19,
+      // Base tile layer — CartoDB Positron (reliable CDN)
+      const street = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 20,
       }).addTo(map);
 
       // Satellite layer option
@@ -216,12 +217,7 @@ export default function IncidentMap({
 
       // Layer control
       L.control.layers(
-        {
-          'Street Map': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap',
-          }),
-          'Satellite':  satellite,
-        },
+        { 'Street Map': street, 'Satellite': satellite },
         {},
         { position: 'topright' }
       ).addTo(map);
@@ -618,9 +614,8 @@ export default function IncidentMap({
       />
 
       {/* Leaflet CSS — must be loaded for map to render correctly */}
+      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
       <style jsx global>{`
-        @import url('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
-
         .reuse360-popup .leaflet-popup-content-wrapper {
           padding: 8px;
           border-radius: 8px;

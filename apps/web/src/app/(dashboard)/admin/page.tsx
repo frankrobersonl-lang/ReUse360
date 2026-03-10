@@ -12,10 +12,15 @@ import {
   Cpu,
   MapPin,
   Activity,
+  ClipboardList,
+  Car,
 } from 'lucide-react';
 
 export default async function AdminPage() {
   const user = await requireAdmin();
+
+  const todayStart = new Date(new Date().setHours(0, 0, 0, 0));
+  const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
   const [
     totalUsers,
@@ -29,6 +34,9 @@ export default async function AdminPage() {
     violationsToday,
     violationsThisWeek,
     recentViolations,
+    patrolLogsToday,
+    patrolLogsWeek,
+    totalPatrolMileage,
   ] = await Promise.all([
     db.user.count({ where: { isActive: true } }),
     db.violation.count({ where: { status: { in: ['DETECTED', 'CONFIRMED', 'NOTIFIED'] } } }),
@@ -38,17 +46,16 @@ export default async function AdminPage() {
     db.complaint.count({ where: { status: { in: ['OPEN', 'INVESTIGATING'] } } }),
     db.connectorJob.count({ where: { status: { in: ['QUEUED', 'RUNNING'] } } }),
     db.wateringZone.count({ where: { isActive: true } }),
-    db.violation.count({
-      where: { detectedAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) } },
-    }),
-    db.violation.count({
-      where: { detectedAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } },
-    }),
+    db.violation.count({ where: { detectedAt: { gte: todayStart } } }),
+    db.violation.count({ where: { detectedAt: { gte: weekAgo } } }),
     db.violation.findMany({
       take: 5,
       orderBy: { detectedAt: 'desc' },
       include: { account: true },
     }),
+    db.patrolLog.count({ where: { patrolDate: { gte: todayStart } } }),
+    db.patrolLog.count({ where: { patrolDate: { gte: weekAgo } } }),
+    db.patrolLog.aggregate({ _sum: { mileage: true }, where: { patrolDate: { gte: weekAgo } } }),
   ]);
 
   return (
@@ -133,7 +140,36 @@ export default async function AdminPage() {
         </div>
       </div>
 
-      {/* KPI Grid — Row 3: System */}
+      {/* KPI Grid — Row 3: Field Operations */}
+      <div>
+        <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
+          Field Operations
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <KpiCard
+            label="Patrol Logs Today"
+            value={patrolLogsToday}
+            sub="Shifts submitted today"
+            icon={ClipboardList}
+            variant={patrolLogsToday > 0 ? 'success' : 'default'}
+          />
+          <KpiCard
+            label="Patrols This Week"
+            value={patrolLogsWeek}
+            sub="Rolling 7-day window"
+            icon={Car}
+            variant={patrolLogsWeek > 0 ? 'success' : 'default'}
+          />
+          <KpiCard
+            label="Patrol Mileage"
+            value={Math.round(totalPatrolMileage._sum.mileage ?? 0)}
+            sub="Miles driven this week"
+            icon={MapPin}
+          />
+        </div>
+      </div>
+
+      {/* KPI Grid — Row 4: System */}
       <div>
         <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
           System & Users

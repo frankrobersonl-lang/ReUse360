@@ -2,7 +2,7 @@ import { requireEnforcement }  from '@/lib/auth.server';
 import { db }                  from '@/lib/db';
 import { KpiCard }             from '@/components/ui/KpiCard';
 import { ParcelSearch }        from '@/components/enforcement/ParcelSearch';
-import { AlertTriangle, ClipboardCheck, FileCheck, MessageSquare, Droplets } from 'lucide-react';
+import { AlertTriangle, ClipboardCheck, FileCheck, MessageSquare, Droplets, ClipboardList } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
@@ -28,12 +28,15 @@ export default async function EnforcementDashboardPage() {
   const user = await requireEnforcement();
 
   // Run all queries in parallel
+  const todayStart = new Date(new Date().setHours(0, 0, 0, 0));
+
   const [
     openViolations,
     pendingInspections,
     activePermits,
     openComplaints,
     recentViolations,
+    patrolLogsToday,
   ] = await Promise.all([
     db.violation.count({ where: { status: { in: ['DETECTED', 'CONFIRMED', 'NOTIFIED'] } } }),
     db.inspection.count({ where: { status: { in: ['SCHEDULED', 'IN_PROGRESS'] } } }),
@@ -45,6 +48,7 @@ export default async function EnforcementDashboardPage() {
       where:   { status: { not: 'DISMISSED' } },
       include: { account: { select: { serviceAddress: true, firstName: true, lastName: true } } },
     }),
+    db.patrolLog.count({ where: { patrolDate: { gte: todayStart } } }),
   ]);
 
   return (
@@ -61,7 +65,7 @@ export default async function EnforcementDashboardPage() {
       <ParcelSearch />
 
       {/* KPI grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         <KpiCard
           label="Open Violations"
           value={openViolations}
@@ -89,6 +93,13 @@ export default async function EnforcementDashboardPage() {
           icon={MessageSquare}
           variant={openComplaints > 10 ? 'warning' : 'default'}
           sub="OPEN · INVESTIGATING"
+        />
+        <KpiCard
+          label="Patrols Today"
+          value={patrolLogsToday}
+          icon={ClipboardList}
+          variant={patrolLogsToday > 0 ? 'success' : 'default'}
+          sub="Shifts logged today"
         />
       </div>
 
@@ -158,7 +169,7 @@ export default async function EnforcementDashboardPage() {
       {/* Quick actions */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: 'Log Inspection',   href: '/enforcement/inspections/new', icon: ClipboardCheck, color: 'teal'   },
+          { label: 'Open Inspections', href: '/enforcement/inspections',     icon: ClipboardCheck, color: 'teal'   },
           { label: 'View Violations',  href: '/enforcement/violations',      icon: AlertTriangle,  color: 'amber'  },
           { label: 'Field Map',        href: '/enforcement/map',             icon: Droplets,       color: 'sky'    },
           { label: 'Open Complaints',  href: '/enforcement/complaints',      icon: MessageSquare,  color: 'orange' },

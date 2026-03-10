@@ -96,10 +96,11 @@ export default function ViolationMap({ violations }: ViolationMapProps) {
         scrollWheelZoom: true,
       });
 
-      // Street tiles
-      const street = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-        maxZoom: 19,
+      // Street tiles — CartoDB Positron (reliable CDN, clean basemap for markers)
+      const street = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 20,
       }).addTo(map);
 
       // Satellite tiles
@@ -272,9 +273,8 @@ export default function ViolationMap({ violations }: ViolationMapProps) {
       <div ref={mapDivRef} className="flex-1 relative z-0" style={{ minHeight: '500px' }} />
 
       {/* Leaflet CSS */}
+      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
       <style jsx global>{`
-        @import url('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
-
         .violation-map-popup .leaflet-popup-content-wrapper {
           padding: 8px;
           border-radius: 8px;

@@ -1,6 +1,7 @@
 import { requireEnforcement } from '@/lib/auth.server';
 import { KpiCard } from '@/components/ui/KpiCard';
 import db from '@/lib/db';
+import Link from 'next/link';
 import { ClipboardCheck, Clock, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 
 export default async function EnforcementInspectionsPage() {
@@ -47,7 +48,11 @@ export default async function EnforcementInspectionsPage() {
               <tr><td colSpan={6} className="px-4 py-8 text-center text-slate-400">No inspections scheduled. Inspections are created from confirmed violations.</td></tr>
             ) : inspections.map((i) => (
               <tr key={i.id} className="hover:bg-slate-50 transition-colors">
-                <td className="px-4 py-3 font-medium text-slate-900">{i.address}</td>
+                <td className="px-4 py-3 font-medium">
+                  <Link href={`/enforcement/inspections/${i.id}`} className="text-teal-600 hover:text-teal-700">
+                    {i.address}
+                  </Link>
+                </td>
                 <td className="px-4 py-3 text-slate-600">{i.assignedUser ? `${i.assignedUser.firstName} ${i.assignedUser.lastName}` : '-'}</td>
                 <td className="px-4 py-3">
                   <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${i.status === 'COMPLETE' ? 'bg-green-50 text-green-700' : i.status === 'IN_PROGRESS' ? 'bg-blue-50 text-blue-700' : i.status === 'NO_ACCESS' ? 'bg-amber-50 text-amber-700' : 'bg-slate-100 text-slate-600'}`}>{i.status.replace(/_/g, ' ')}</span>

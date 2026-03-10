@@ -307,7 +307,7 @@ export default function PatrolLogPage() {
         <h2 className="text-sm font-semibold text-slate-700 mb-4">Patrol Log History</h2>
 
         {/* Filter bar */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 mb-4">
+        <div className="bg-white rounded-xl border border-slate-200 p-4 mb-4 space-y-3">
           <div className="flex flex-wrap items-end gap-3">
             <div>
               <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Start Date</label>
@@ -329,16 +329,14 @@ export default function PatrolLogPage() {
                 ))}
               </select>
             </div>
-            {isAdmin && (
-              <div className="ml-auto">
-                <button onClick={handleExport} disabled={stats.totalRecords === 0}
-                  className="flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                  <FileDown className="w-4 h-4" />
-                  Export CSV
-                </button>
-              </div>
-            )}
           </div>
+          {isAdmin && (
+            <button onClick={handleExport} disabled={stats.totalRecords === 0}
+              className="flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              <FileDown className="w-4 h-4" />
+              Export CSV
+            </button>
+          )}
         </div>
 
         {/* Summary stats */}

@@ -9,6 +9,8 @@ export interface ViolationDetectionJobData {
   wateringZone?: string;
   /** Optional: restrict to reads after this ISO date */
   sinceDate?: string;
+  /** How many hours back to fetch reads (default: 24) */
+  fetchSinceHours?: number;
 }
 
 @Processor(QUEUE_NAMES.VIOLATION_DETECTION)
@@ -26,14 +28,6 @@ export class ViolationDetectionProcessor extends WorkerHost {
 
     try {
       await this.service.markJobRunning(connectorJob.id);
-
-      // TODO: 1. Fetch recent MeterReads from DB (last N hours)
-      // TODO: 2. Cross-reference against WateringZone rules (allowed days/times)
-      // TODO: 3. Flag reads outside allowed windows as WRONG_DAY or WRONG_TIME
-      // TODO: 4. Detect continuous flow (>= 24h) as CONTINUOUS_FLOW / LEAK_DETECTED
-      // TODO: 5. Detect excessive usage above threshold as EXCESSIVE_USAGE
-      // TODO: 6. Create Violation records with status DETECTED
-      // TODO: 7. Queue notification-dispatch jobs for each new violation
 
       const result = await this.service.runDetection(job.data);
 

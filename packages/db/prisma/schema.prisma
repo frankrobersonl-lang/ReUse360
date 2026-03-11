@@ -94,6 +94,20 @@ enum AlertSeverity {
   CRITICAL
 }
 
+enum IncentiveType {
+  CONVERSION_REBATE
+  USAGE_MILESTONE
+  COMPLIANCE_STREAK
+  OUTREACH_PARTICIPATION
+}
+
+enum IncentiveStatus {
+  PENDING
+  APPROVED
+  PAID
+  DENIED
+}
+
 enum JobType {
   BEACON_RANGE_READ
   BEACON_FLOW_EXPORT
@@ -174,14 +188,17 @@ model CustomerAccount {
   email          String?
   phone          String?
   serviceAddress String
-  isReclaimed    Boolean  @default(false)
-  isActive       Boolean  @default(true)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  isReclaimed              Boolean  @default(false)
+  reclaimedGallonsBaseline Decimal? @db.Decimal(12, 2)
+  reclaimedGallonsCurrent  Decimal? @db.Decimal(12, 2)
+  isActive                 Boolean  @default(true)
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
 
-  parcel     Parcel     @relation(fields: [parcelId], references: [parcelId])
+  parcel     Parcel              @relation(fields: [parcelId], references: [parcelId])
   violations Violation[]
   alerts     Alert[]
+  incentives ReclaimedIncentive[]
 
   @@index([meterId])
   @@index([parcelId])
@@ -417,6 +434,31 @@ model ParcelZoneAssignment {
   @@index([zoneId])
   @@index([effectiveDate])
   @@map("parcel_zone_assignments")
+}
+
+model ReclaimedIncentive {
+  id           String          @id @default(uuid())
+  accountId    String
+  type         IncentiveType
+  status       IncentiveStatus @default(PENDING)
+  amount       Decimal         @db.Decimal(10, 2)
+  description  String?         @db.Text
+  appliedAt    DateTime        @default(now())
+  approvedAt   DateTime?
+  paidAt       DateTime?
+  deniedAt     DateTime?
+  deniedReason String?         @db.Text
+  approvedBy   String?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  account CustomerAccount @relation(fields: [accountId], references: [accountId])
+
+  @@index([accountId])
+  @@index([status])
+  @@index([type])
+  @@index([appliedAt])
+  @@map("reclaimed_incentives")
 }
 
 model PatrolLog {

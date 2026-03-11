@@ -33,6 +33,7 @@ export const ROLE_ROUTES: Record<UserRole, string[]> = {
     '/analyst/analytics/usage',
     '/analyst/analytics/violations',
     '/analyst/analytics/reclaimed',
+    '/analyst/analytics/incentives',
     '/analyst/customers',
     '/analyst/customers/[id]',
     '/analyst/meters',
@@ -62,6 +63,7 @@ export const ROLE_ROUTES: Record<UserRole, string[]> = {
     '/analyst/analytics/usage',
     '/analyst/analytics/violations',
     '/analyst/analytics/reclaimed',
+    '/analyst/analytics/incentives',
     '/analyst/customers',
     '/analyst/customers/[id]',
     '/analyst/meters',
@@ -149,7 +151,11 @@ export type Permission =
   | 'reports:export'
   // Alerts
   | 'alerts:read'
-  | 'alerts:dismiss';
+  | 'alerts:dismiss'
+  // Incentives
+  | 'incentives:read'
+  | 'incentives:create'
+  | 'incentives:edit';
 
 export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
   ADMIN: [
@@ -166,6 +172,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'audit:read',
     'reports:read', 'reports:export',
     'alerts:read', 'alerts:dismiss',
+    'incentives:read', 'incentives:create', 'incentives:edit',
   ],
 
   ANALYST: [
@@ -180,6 +187,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'jobs:read',
     'reports:read', 'reports:export',
     'alerts:read', 'alerts:dismiss',
+    'incentives:read', 'incentives:create',
   ],
 
   ENFORCEMENT: [

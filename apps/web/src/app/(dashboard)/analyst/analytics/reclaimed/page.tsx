@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { requireAnalyst } from '@/lib/auth.server';
 import { KpiCard } from '@/components/ui/KpiCard';
 import { UsageSplitChartSection } from '@/components/charts/UsageSplitChartSection';
@@ -46,9 +47,17 @@ export default async function ReclaimedWaterPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Reclaimed Water Analytics</h1>
-        <p className="text-sm text-slate-500 mt-1">Adoption tracking - potable demand offset through reclaimed irrigation</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Reclaimed Water Analytics</h1>
+          <p className="text-sm text-slate-500 mt-1">Adoption tracking - potable demand offset through reclaimed irrigation</p>
+        </div>
+        <Link
+          href="/analyst/analytics/incentives"
+          className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium rounded-lg transition-colors"
+        >
+          Incentive Tracker →
+        </Link>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <KpiCard label="Reclaimed Accounts" value={reclaimedAccounts} sub="Active reclaimed customers" icon={Recycle} variant="success" />

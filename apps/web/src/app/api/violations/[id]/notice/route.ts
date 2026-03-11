@@ -25,6 +25,27 @@ export async function GET(
     return Response.json({ error: 'Violation not found' }, { status: 404 });
   }
 
+  // Ensure a proper case number exists (PCU-YYYY-XXXX)
+  let caseNumber = violation.caseNumber;
+  if (!caseNumber) {
+    const year = new Date().getFullYear();
+    const lastCase = await db.violation.findFirst({
+      where:   { caseNumber: { startsWith: `PCU-${year}-` } },
+      orderBy: { caseNumber: 'desc' },
+      select:  { caseNumber: true },
+    });
+    let seq = 1;
+    if (lastCase?.caseNumber) {
+      const lastSeq = parseInt(lastCase.caseNumber.split('-')[2]);
+      if (!isNaN(lastSeq)) seq = lastSeq + 1;
+    }
+    caseNumber = `PCU-${year}-${String(seq).padStart(4, '0')}`;
+    await db.violation.update({
+      where: { id },
+      data:  { caseNumber },
+    });
+  }
+
   // Count prior violations for this account to determine fee tier
   const priorCount = await db.violation.count({
     where: {
@@ -35,7 +56,7 @@ export async function GET(
   });
 
   const pdfBytes = await generateViolationNoticePDF({
-    caseNumber:     violation.caseNumber ?? `PCU-${violation.id.slice(0, 8)}`,
+    caseNumber,
     violationType:  violation.violationType,
     detectedAt:     violation.detectedAt,
     confirmedAt:    violation.confirmedAt,
@@ -51,7 +72,7 @@ export async function GET(
     priorCount,
   });
 
-  const filename = `violation-notice-${violation.caseNumber ?? violation.id.slice(0, 8)}.pdf`;
+  const filename = `violation-notice-${caseNumber}.pdf`;
 
   return new Response(Buffer.from(pdfBytes), {
     headers: {

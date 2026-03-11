@@ -1,6 +1,7 @@
 import { requireAnalyst } from '@/lib/auth.server';
 import { KpiCard } from '@/components/ui/KpiCard';
 import db from '@/lib/db';
+import Link from 'next/link';
 import { Building2, UserCheck, UserX, Recycle } from 'lucide-react';
 
 export default async function AnalystCustomersPage() {
@@ -47,7 +48,11 @@ export default async function AnalystCustomersPage() {
               <tr><td colSpan={6} className="px-4 py-8 text-center text-slate-400">No customer accounts. Import from SAP billing or Beacon AMI.</td></tr>
             ) : customers.map((c) => (
               <tr key={c.id} className="hover:bg-slate-50 transition-colors">
-                <td className="px-4 py-3 font-medium text-slate-900">{c.firstName} {c.lastName}</td>
+                <td className="px-4 py-3 font-medium text-slate-900">
+                  <Link href={`/analyst/customers/${c.accountId}`} className="hover:text-teal-600">
+                    {c.firstName} {c.lastName}
+                  </Link>
+                </td>
                 <td className="px-4 py-3 text-slate-600">{c.accountId}</td>
                 <td className="px-4 py-3 text-slate-600">{c.serviceAddress}</td>
                 <td className="px-4 py-3">

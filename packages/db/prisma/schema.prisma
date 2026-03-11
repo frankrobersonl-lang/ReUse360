@@ -399,6 +399,26 @@ model WateringZone {
   @@map("watering_zones")
 }
 
+model ParcelZoneAssignment {
+  id            String    @id @default(uuid())
+  parcelId      String    // Pinellas eGIS PARCELID
+  zoneId        String    // References WateringZone.zoneCode
+  zoneName      String?
+  dayOfWeek     String?   // MON, TUE, WED, etc.
+  oddEven       String?   // ODD | EVEN
+  effectiveDate DateTime  @default(now())
+  geojson       String?   @db.Text
+  source        String?   // "CSV" | "ArcGIS" | "manual"
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([parcelId, zoneId])
+  @@index([parcelId])
+  @@index([zoneId])
+  @@index([effectiveDate])
+  @@map("parcel_zone_assignments")
+}
+
 model PatrolLog {
   id                  String   @id @default(cuid())
   officerNames        String[]

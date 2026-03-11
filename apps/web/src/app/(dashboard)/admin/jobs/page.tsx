@@ -4,21 +4,28 @@ import { JobRetryButton } from '@/components/admin/JobRetryButton';
 import db from '@/lib/db';
 import { Activity, Clock, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
 
+/** Max runtime for any job before it's considered a zombie (10 min) */
+const JOB_TIMEOUT_MS = 10 * 60 * 1000;
+
 /** Map raw error strings to user-friendly descriptions */
 function formatError(raw: string | null): string | null {
   if (!raw) return null;
+  if (/job timeout exceeded/i.test(raw))
+    return `Job exceeded the maximum runtime of 10 minutes and was automatically stopped. It has been reset for retry.`;
+  if (/connection.?timeout.*60s|did not respond within 60s/i.test(raw))
+    return `Connection timeout — the Beacon API did not respond within 60 seconds after multiple retry attempts with exponential backoff. Check Beacon API status and network connectivity.`;
   if (/connection.?timeout/i.test(raw))
-    return `Connection timeout — the external service did not respond. This is typically transient; retry with backoff. (${raw})`;
+    return `Connection timeout — the external service did not respond. The job will retry with exponential backoff.`;
   if (/ECONNREFUSED/i.test(raw))
-    return `Connection refused — the external service is unreachable. Check that the service URL and port are correct. (${raw})`;
+    return `Connection refused — the external service is unreachable. Check that the service URL and port are correct.`;
   if (/ENOTFOUND|DNS/i.test(raw))
-    return `DNS resolution failed — the hostname could not be resolved. Verify the service URL in environment settings. (${raw})`;
+    return `DNS resolution failed — the hostname could not be resolved. Verify the service URL in environment settings.`;
   if (/401|unauthorized/i.test(raw))
-    return `Authentication failed — check API credentials in Admin > Connectors. (${raw})`;
+    return `Authentication failed — check API credentials in Admin > Connectors.`;
   if (/429|rate.?limit/i.test(raw))
-    return `Rate limited by external API — the job will be retried automatically with exponential backoff. (${raw})`;
+    return `Rate limited by external API — the job will be retried automatically with exponential backoff.`;
   if (/500|internal.?server/i.test(raw))
-    return `External service returned a server error (500). This is on the remote end; retry later. (${raw})`;
+    return `External service returned a server error (500). This is on the remote end; retry later.`;
   return raw;
 }
 
@@ -32,6 +39,20 @@ const STATUS_BADGE: Record<string, string> = {
 
 export default async function AdminJobsPage() {
   await requireAdmin();
+
+  // Auto-fail zombie jobs: RUNNING longer than 10 minutes
+  const zombieCutoff = new Date(Date.now() - JOB_TIMEOUT_MS);
+  await db.connectorJob.updateMany({
+    where: {
+      status: 'RUNNING',
+      startedAt: { lt: zombieCutoff },
+    },
+    data: {
+      status: 'FAILED',
+      errorMessage: 'Job timeout exceeded — job did not complete within 10 minutes and was automatically stopped',
+      completedAt: new Date(),
+    },
+  });
 
   const [queued, running, complete, failed, retrying, jobs] = await Promise.all([
     db.connectorJob.count({ where: { status: 'QUEUED' } }),

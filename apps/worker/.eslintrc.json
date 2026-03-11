@@ -1,0 +1,15 @@
+{
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint"],
+  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
+  "parserOptions": {
+    "project": "./tsconfig.json"
+  },
+  "root": true,
+  "env": {
+    "node": true
+  },
+  "rules": {
+    "@typescript-eslint/no-explicit-any": "warn"
+  }
+}

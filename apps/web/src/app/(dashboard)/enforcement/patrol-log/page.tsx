@@ -3,8 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
-import { useReUse360Auth } from '@/lib/auth.client';
-import { FileDown, AlertTriangle, FileText, MapPin, Car } from 'lucide-react';
+import { Download, AlertTriangle, FileText, MapPin, Car } from 'lucide-react';
 
 const OFFICERS = [
   'Franklin Roberson',
@@ -43,9 +42,6 @@ interface Stats {
 export default function PatrolLogPage() {
   const router = useRouter();
   const { user } = useUser();
-  const { role } = useReUse360Auth();
-  const isAdmin = role === 'ADMIN';
-
   // ── Form state ────────────────────────────
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -166,11 +162,34 @@ export default function PatrolLogPage() {
   }
 
   function handleExport() {
-    const params = new URLSearchParams();
-    if (startDate) params.set('startDate', startDate);
-    if (endDate) params.set('endDate', endDate);
-    if (officer) params.set('officer', officer);
-    window.location.href = `/api/patrol-logs/export?${params}`;
+    const escapeCSV = (val: string) => {
+      if (val.includes(',') || val.includes('"') || val.includes('\n')) {
+        return `"${val.replace(/"/g, '""')}"`;
+      }
+      return val;
+    };
+
+    const headers = ['DATE', 'OFFICER(S)', 'SHIFT', 'MILES', 'VIOLATIONS', 'CITATIONS', 'WARNINGS', 'SOURCE', 'NOTES'];
+    const rows = logs.map((log) => [
+      new Date(log.patrolDate).toLocaleDateString('en-US'),
+      escapeCSV(log.officerNames.join('; ')),
+      log.shiftStart && log.shiftEnd ? `${log.shiftStart} - ${log.shiftEnd}` : log.shiftStart || '',
+      String(log.mileage),
+      String(log.numberOfViolations),
+      String(log.citationsIssued),
+      String(log.warningsIssued),
+      log.waterSource ?? '',
+      escapeCSV(log.notes ?? ''),
+    ]);
+
+    const csv = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `patrol-log-export-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
   // ── Render ────────────────────────────────
@@ -307,7 +326,7 @@ export default function PatrolLogPage() {
         <h2 className="text-sm font-semibold text-slate-700 mb-4">Patrol Log History</h2>
 
         {/* Filter bar */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 mb-4 space-y-3">
+        <div className="bg-white rounded-xl border border-slate-200 p-4 mb-4">
           <div className="flex flex-wrap items-end gap-3">
             <div>
               <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Start Date</label>
@@ -329,14 +348,14 @@ export default function PatrolLogPage() {
                 ))}
               </select>
             </div>
+            <div className="ml-auto">
+              <button onClick={handleExport} disabled={logs.length === 0}
+                className="flex items-center gap-2 px-4 py-2 border border-teal-600 text-teal-600 hover:bg-teal-50 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                <Download className="w-4 h-4" />
+                Export CSV
+              </button>
+            </div>
           </div>
-          {isAdmin && (
-            <button onClick={handleExport} disabled={stats.totalRecords === 0}
-              className="flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-              <FileDown className="w-4 h-4" />
-              Export CSV
-            </button>
-          )}
         </div>
 
         {/* Summary stats */}
@@ -344,7 +363,7 @@ export default function PatrolLogPage() {
           <StatCard label="Total Records" value={stats.totalRecords} icon={<FileText className="w-4 h-4" />} />
           <StatCard label="Total Miles" value={Math.round(stats.totalMiles)} icon={<MapPin className="w-4 h-4" />} />
           <StatCard label="Violations Observed" value={stats.totalViolations} icon={<AlertTriangle className="w-4 h-4" />} warn={stats.totalViolations > 0} />
-          <StatCard label="Citations Issued" value={stats.totalCitations} icon={<FileDown className="w-4 h-4" />} />
+          <StatCard label="Citations Issued" value={stats.totalCitations} icon={<FileText className="w-4 h-4" />} />
           <StatCard label="Warnings Issued" value={stats.totalWarnings} icon={<Car className="w-4 h-4" />} />
         </div>
 

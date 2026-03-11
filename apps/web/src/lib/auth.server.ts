@@ -4,8 +4,6 @@ import {
   hasPermission,
   getDefaultRoute,
   getRoleLabel,
-  ROLE_PERMISSIONS,
-  ROLE_WIDGETS,
   type UserRole,
   type Permission,
 } from '@reuse360/auth';
@@ -102,15 +100,18 @@ export async function guardApi(permission: Permission): Promise<
     firstName = freshUser.firstName ?? null;
     lastName  = freshUser.lastName  ?? null;
   } catch {
-    // If Clerk Backend API fails, fall back to the DB user record
-    const dbUser = await (await import('@/lib/db')).db.user.findFirst({
-      where: { clerkId: userId },
-    });
+    // Clerk Backend API unreachable — fall back to DB below
+  }
+
+  // Fall back to the DB user record if Clerk didn't provide a role
+  if (!role) {
+    const { db } = await import('@/lib/db');
+    const dbUser = await db.user.findFirst({ where: { clerkId: userId } });
     if (dbUser) {
       role      = dbUser.role as UserRole;
-      email     = dbUser.email ?? '';
-      firstName = dbUser.firstName ?? null;
-      lastName  = dbUser.lastName ?? null;
+      email     = email || dbUser.email || '';
+      firstName = firstName ?? dbUser.firstName ?? null;
+      lastName  = lastName ?? dbUser.lastName ?? null;
     }
   }
 

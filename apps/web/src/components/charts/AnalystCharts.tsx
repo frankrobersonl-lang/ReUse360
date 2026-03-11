@@ -28,8 +28,11 @@ export function AnalystCharts() {
 
   useEffect(() => {
     fetch('/api/analyst/charts')
-      .then((res) => {
-        if (!res.ok) throw new Error(`${res.status}`);
+      .then(async (res) => {
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new Error(`${res.status}: ${body.error ?? body.message ?? 'Unknown error'}`);
+        }
         return res.json();
       })
       .then(setData)

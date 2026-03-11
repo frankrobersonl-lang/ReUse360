@@ -3,7 +3,7 @@ import { db }                  from '@/lib/db';
 import { notFound }            from 'next/navigation';
 import Link                    from 'next/link';
 import { cn }                  from '@/lib/utils';
-import { ConfirmViolationButton, CreateSRButton } from './ViolationActions';
+import { ConfirmViolationButton, CreateSRButton, DownloadNoticeButton } from './ViolationActions';
 import { StatusProgression } from './StatusProgression';
 
 const STATUS_STYLES: Record<string, string> = {
@@ -93,6 +93,7 @@ export default async function ViolationDetailPage({ params }: Props) {
         {(violation.status === 'CONFIRMED' || violation.status === 'NOTIFIED') && !violation.cityworksSrId && (
           <CreateSRButton violationId={id} />
         )}
+        <DownloadNoticeButton violationId={id} />
         <Link
           href={`/enforcement/inspections/new?violationId=${id}`}
           className="px-4 py-2 bg-white border border-slate-200 hover:border-slate-300 text-sm font-medium text-slate-700 rounded-lg transition-colors"

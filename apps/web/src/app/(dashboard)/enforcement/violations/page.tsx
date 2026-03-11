@@ -3,6 +3,7 @@ import { db }                  from '@/lib/db';
 import Link                    from 'next/link';
 import { cn }                  from '@/lib/utils';
 import { ViolationSearch }     from './ViolationSearch';
+import { GenerateNoticeLink }  from './GenerateNoticeLink';
 
 const STATUS_STYLES: Record<string, string> = {
   DETECTED:   'bg-amber-50  text-amber-700  border-amber-200',
@@ -143,12 +144,15 @@ export default async function ViolationsPage({ searchParams }: Props) {
                     {new Date(v.detectedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })}
                   </td>
                   <td className="px-4 py-3 text-right whitespace-nowrap">
-                    <Link
-                      href={`/enforcement/violations/${v.id}`}
-                      className="text-xs text-teal-600 hover:text-teal-700 font-medium"
-                    >
-                      View →
-                    </Link>
+                    <div className="flex items-center justify-end gap-3">
+                      <GenerateNoticeLink violationId={v.id} />
+                      <Link
+                        href={`/enforcement/violations/${v.id}`}
+                        className="text-xs text-teal-600 hover:text-teal-700 font-medium"
+                      >
+                        View →
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))}

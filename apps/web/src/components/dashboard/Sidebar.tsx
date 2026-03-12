@@ -30,6 +30,7 @@ interface NavItem {
 }
 
 const NAV: NavItem[] = [
+  { label: 'Accounts', href: '/accounts', icon: 'Building2', roles: ['ADMIN', 'ANALYST', 'ENFORCEMENT'] },
   {
     label: 'Administration', href: '/admin', icon: 'Settings2', roles: ['ADMIN'],
     children: [

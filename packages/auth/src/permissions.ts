@@ -12,6 +12,7 @@ export const ROLE_ROUTES: Record<UserRole, string[]> = {
   ADMIN: [
     '/accounts',
     '/accounts/[id]',
+    '/violations/[id]',
     '/admin',
     '/admin/users',
     '/admin/users/invite',
@@ -61,6 +62,7 @@ export const ROLE_ROUTES: Record<UserRole, string[]> = {
   ANALYST: [
     '/accounts',
     '/accounts/[id]',
+    '/violations/[id]',
     '/analyst',
     '/analyst/dashboard',
     '/analyst/analytics',
@@ -85,6 +87,7 @@ export const ROLE_ROUTES: Record<UserRole, string[]> = {
   ENFORCEMENT: [
     '/accounts',
     '/accounts/[id]',
+    '/violations/[id]',
     '/enforcement',
     '/enforcement/dashboard',
     '/enforcement/violations',

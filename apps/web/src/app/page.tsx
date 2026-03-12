@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { DM_Serif_Display, DM_Sans } from 'next/font/google';
+import { useAuth } from '@clerk/nextjs';
 
 /* ── Fonts ─────────────────────────────────────────────── */
 const serif = DM_Serif_Display({
@@ -75,6 +77,15 @@ const features = [
 
 /* ── Page ──────────────────────────────────────────────── */
 export default function LandingPage() {
+  const { isSignedIn, isLoaded } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isLoaded && isSignedIn) {
+      router.push('/dashboard');
+    }
+  }, [isLoaded, isSignedIn, router]);
+
   const staffHours = useCountUp(780, 2000);
   const costAvoidance = useCountUp(27, 2000);
   const reviewReduction = useCountUp(70, 1800);

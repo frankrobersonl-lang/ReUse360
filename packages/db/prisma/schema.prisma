@@ -538,3 +538,30 @@ model RagDocument {
   @@index([createdAt])
   @@map("rag_documents")
 }
+
+// ── Notifications ────────────────────────────
+
+enum NotificationType {
+  VIOLATION_ALERT
+  INSPECTION_DUE
+  COMPLIANCE_WARNING
+  SYSTEM
+  PATROL_REMINDER
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  title     String
+  message   String           @db.Text
+  type      NotificationType
+  read      Boolean          @default(false)
+  link      String?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@index([userId])
+  @@index([userId, read])
+  @@index([createdAt])
+  @@map("notifications")
+}

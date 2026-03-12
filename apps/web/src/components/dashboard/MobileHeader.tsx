@@ -4,6 +4,7 @@ import { UserButton }    from '@clerk/nextjs';
 import { getRoleLabel }  from '@reuse360/auth';
 import { cn }            from '@/lib/utils';
 import type { AuthUser } from '@/lib/auth.server';
+import { NotificationBell } from './NotificationBell';
 
 interface MobileHeaderProps {
   user:        AuthUser;
@@ -30,7 +31,10 @@ export function MobileHeader({ user, displayName, initials, roleStyle }: MobileH
         {getRoleLabel(user.role)}
       </div>
 
-      <UserButton afterSignOutUrl="/sign-in" />
+      <div className="flex items-center gap-2">
+        <NotificationBell />
+        <UserButton afterSignOutUrl="/sign-in" />
+      </div>
     </header>
   );
 }

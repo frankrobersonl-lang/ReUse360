@@ -3,6 +3,7 @@ import { requireAuth }        from '@/lib/auth.server';
 import { getRoleLabel, type UserRole } from '@reuse360/auth';
 import { Sidebar }            from '@/components/dashboard/Sidebar';
 import { MobileHeader }       from '@/components/dashboard/MobileHeader';
+import { NotificationBell }   from '@/components/dashboard/NotificationBell';
 import ChatWidget             from '@/components/ChatWidget';
 
 export const ROLE_STYLES: Record<UserRole, { bg: string; text: string; border: string; dot: string }> = {
@@ -34,6 +35,10 @@ export default async function DashboardLayout({ children }: { children: ReactNod
           initials={initials}
           roleStyle={roleStyle}
         />
+        {/* Desktop top bar with notification bell */}
+        <div className="hidden lg:flex items-center justify-end px-6 py-2 border-b border-slate-100 bg-white">
+          <NotificationBell />
+        </div>
         <main className="flex-1 overflow-y-auto p-6">
           {children}
         </main>

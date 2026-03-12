@@ -125,7 +125,7 @@ export default async function ViolationsPage({ searchParams }: Props) {
                 <tr
                   key={v.id}
                   className="hover:bg-slate-50/50 transition-colors cursor-pointer"
-                  onClick={() => { window.location.href = `/violations/${v.id}`; }}
+                  onClick={() => { window.location.href = `/enforcement/violations/${v.id}`; }}
                 >
                   <td className="px-5 py-3 font-mono text-xs text-teal-700 font-medium whitespace-nowrap">
                     {(v as any).caseNumber ?? '—'}
@@ -151,7 +151,7 @@ export default async function ViolationsPage({ searchParams }: Props) {
                     <div className="flex items-center justify-end gap-3">
                       <GenerateNoticeLink violationId={v.id} />
                       <Link
-                        href={`/violations/${v.id}`}
+                        href={`/enforcement/violations/${v.id}`}
                         className="text-xs text-teal-600 hover:text-teal-700 font-medium"
                         onClick={(e) => e.stopPropagation()}
                       >

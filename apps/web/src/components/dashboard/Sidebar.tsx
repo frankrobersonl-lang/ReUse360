@@ -49,7 +49,6 @@ const NAV: NavItem[] = [
       { label: 'Usage by Zone',    href: '/analyst/analytics/usage',      icon: 'Droplets',        roles: ['ADMIN', 'ANALYST'] },
       { label: 'Violation Trends', href: '/analyst/analytics/violations', icon: 'TrendingUp',      roles: ['ADMIN', 'ANALYST'] },
       { label: 'Reclaimed Water',  href: '/analyst/analytics/reclaimed',  icon: 'Recycle',         roles: ['ADMIN', 'ANALYST'] },
-      { label: 'Customers',        href: '/analyst/customers',            icon: 'Building2',       roles: ['ADMIN', 'ANALYST'] },
       { label: 'Meters',           href: '/analyst/meters',               icon: 'Gauge',           roles: ['ADMIN', 'ANALYST'] },
       { label: 'Reports',          href: '/analyst/reports',              icon: 'FileText',        roles: ['ADMIN', 'ANALYST'] },
     ],

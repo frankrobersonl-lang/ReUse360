@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { DM_Serif_Display, DM_Sans } from 'next/font/google';
-import { useAuth } from '@clerk/nextjs';
+import { useAuth, useUser } from '@clerk/nextjs';
 
 /* ── Fonts ─────────────────────────────────────────────── */
 const serif = DM_Serif_Display({
@@ -78,13 +78,20 @@ const features = [
 /* ── Page ──────────────────────────────────────────────── */
 export default function LandingPage() {
   const { isSignedIn, isLoaded } = useAuth();
+  const { user } = useUser();
   const router = useRouter();
 
   useEffect(() => {
-    if (isLoaded && isSignedIn) {
-      router.push('/dashboard');
+    if (isLoaded && isSignedIn && user) {
+      const role = (user.publicMetadata as { role?: string })?.role;
+      const routes: Record<string, string> = {
+        ADMIN: '/admin',
+        ANALYST: '/analyst/dashboard',
+        ENFORCEMENT: '/enforcement/dashboard',
+      };
+      router.push(routes[role ?? ''] ?? '/admin');
     }
-  }, [isLoaded, isSignedIn, router]);
+  }, [isLoaded, isSignedIn, user, router]);
 
   const staffHours = useCountUp(780, 2000);
   const costAvoidance = useCountUp(27, 2000);

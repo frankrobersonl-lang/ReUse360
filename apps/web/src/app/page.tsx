@@ -75,10 +75,10 @@ const features = [
 
 /* ── Page ──────────────────────────────────────────────── */
 export default function LandingPage() {
-  const galSaved = useCountUp(2.4, 2000, 1);
-  const violations = useCountUp(12800, 2000);
-  const accuracy = useCountUp(99.7, 1800, 1);
-  const response = useCountUp(73, 1600);
+  const staffHours = useCountUp(780, 2000);
+  const costAvoidance = useCountUp(27, 2000);
+  const reviewReduction = useCountUp(70, 1800);
+  const compliance = useCountUp(91.2, 1600, 1);
 
   return (
     <div className={`${serif.variable} ${sans.variable} font-sans`}>
@@ -159,7 +159,7 @@ export default function LandingPage() {
             Intelligent Enforcement Platform
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-center text-gray-500">
-            Four integrated modules working together to detect violations,
+            Six integrated modules working together to detect violations,
             manage inspections, and conserve millions of gallons annually.
           </p>
           <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
@@ -202,10 +202,10 @@ export default function LandingPage() {
           </p>
           <div className="mt-14 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { ref: galSaved.ref, val: `${galSaved.value}M`, label: 'Gallons Saved Annually' },
-              { ref: violations.ref, val: violations.value.toLocaleString(), label: 'Violations Detected' },
-              { ref: accuracy.ref, val: `${accuracy.value}%`, label: 'Detection Accuracy' },
-              { ref: response.ref, val: `${response.value}%`, label: 'Faster Response Time' },
+              { ref: staffHours.ref, val: `520–${staffHours.value}`, label: 'Staff Hours Recovered Annually' },
+              { ref: costAvoidance.ref, val: `$${costAvoidance.value}K`, label: 'Estimated Cost Avoidance/Year' },
+              { ref: reviewReduction.ref, val: `${reviewReduction.value}%`, label: 'Manual Review Time Reduced' },
+              { ref: compliance.ref, val: `${compliance.value}%`, label: 'Compliance Rate' },
             ].map((s) => (
               <div key={s.label} ref={s.ref}>
                 <div

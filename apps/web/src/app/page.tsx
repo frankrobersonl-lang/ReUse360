@@ -83,13 +83,16 @@ export default function LandingPage() {
 
   useEffect(() => {
     if (isLoaded && isSignedIn && user) {
-      const role = (user.publicMetadata as { role?: string })?.role;
-      const routes: Record<string, string> = {
-        ADMIN: '/admin',
-        ANALYST: '/analyst/dashboard',
-        ENFORCEMENT: '/enforcement/dashboard',
-      };
-      router.push(routes[role ?? ''] ?? '/admin');
+      const timer = setTimeout(() => {
+        const role = (user.publicMetadata as { role?: string })?.role;
+        const routes: Record<string, string> = {
+          ADMIN: '/admin',
+          ANALYST: '/analyst/dashboard',
+          ENFORCEMENT: '/enforcement/dashboard',
+        };
+        router.push(routes[role ?? ''] ?? '/admin');
+      }, 5000);
+      return () => clearTimeout(timer);
     }
   }, [isLoaded, isSignedIn, user, router]);
 

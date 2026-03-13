@@ -73,6 +73,16 @@ const features = [
     title: 'Cityworks Integration',
     desc: 'Seamless service request creation and tracking through direct Cityworks REST API connectivity.',
   },
+  {
+    icon: '🛡️',
+    title: 'Enforcement Workflow',
+    desc: 'End-to-end case management from violation detection through inspection scheduling and resolution tracking.',
+  },
+  {
+    icon: '📋',
+    title: 'Permits & Complaints',
+    desc: 'Streamlined irrigation permit approvals and citizen complaint intake with automated routing and status updates.',
+  },
 ];
 
 /* ── Page ──────────────────────────────────────────────── */
@@ -91,7 +101,7 @@ export default function LandingPage() {
           ENFORCEMENT: '/enforcement/dashboard',
         };
         router.push(routes[role ?? ''] ?? '/admin');
-      }, 5000);
+      }, 1500);
       return () => clearTimeout(timer);
     }
   }, [isLoaded, isSignedIn, user, router]);
@@ -108,8 +118,8 @@ export default function LandingPage() {
         className="hero-bg relative flex min-h-screen flex-col overflow-hidden"
         style={{ background: '#0D1B2A' }}
       >
-        <div className="hero-glow" aria-hidden="true" />
-        <div className="hero-particles" aria-hidden="true">
+        <div className="hero-glow" aria-hidden="true" suppressHydrationWarning />
+        <div className="hero-particles" aria-hidden="true" suppressHydrationWarning>
           {Array.from({ length: 20 }).map((_, i) => (
             <span key={i} className="particle" />
           ))}
@@ -183,7 +193,7 @@ export default function LandingPage() {
             Six integrated modules working together to detect violations,
             manage inspections, and conserve millions of gallons annually.
           </p>
-          <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {features.map((f) => (
               <div
                 key={f.title}

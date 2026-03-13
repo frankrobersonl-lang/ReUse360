@@ -38,14 +38,20 @@ export default async function EnforcementMapPage() {
     }));
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-bold text-slate-900">Violation Map</h1>
-        <p className="text-sm text-slate-500">
-          {markers.length} violation{markers.length !== 1 ? 's' : ''} with mapped locations
-        </p>
+    <div className="flex flex-col gap-4 h-[calc(100vh-7rem)] lg:h-[calc(100vh-5.5rem)]">
+      <div className="flex items-center justify-between flex-shrink-0">
+        <div>
+          <h1 className="text-xl font-bold text-slate-900">Field Map</h1>
+          <p className="text-sm text-slate-500">
+            {markers.length} active violation{markers.length !== 1 ? 's' : ''} across Pinellas County
+          </p>
+        </div>
+        <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-teal-50 px-3 py-1 text-xs font-medium text-teal-700 border border-teal-200">
+          <span className="h-1.5 w-1.5 rounded-full bg-teal-500 animate-pulse" />
+          Live
+        </span>
       </div>
-      <div className="h-[calc(100vh-12rem)]">
+      <div className="flex-1 min-h-0">
         <ViolationMapLoader violations={markers} />
       </div>
     </div>

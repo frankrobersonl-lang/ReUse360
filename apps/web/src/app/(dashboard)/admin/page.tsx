@@ -1,6 +1,7 @@
 import { requireAdmin } from '@/lib/auth.server';
 import { KpiCard } from '@/components/ui/KpiCard';
 import db from '@/lib/db';
+import Link from 'next/link';
 import {
   Users,
   AlertTriangle,
@@ -14,7 +15,17 @@ import {
   Activity,
   ClipboardList,
   Car,
+  Building2,
 } from 'lucide-react';
+
+const STATUS_STYLES: Record<string, string> = {
+  DETECTED:   'bg-amber-50  text-amber-700',
+  CONFIRMED:  'bg-orange-50 text-orange-700',
+  NOTIFIED:   'bg-blue-50   text-blue-700',
+  SR_CREATED: 'bg-purple-50 text-purple-700',
+  RESOLVED:   'bg-green-50  text-green-700',
+  DISMISSED:  'bg-slate-50  text-slate-500',
+};
 
 export default async function AdminPage() {
   const user = await requireAdmin();
@@ -37,6 +48,7 @@ export default async function AdminPage() {
     patrolLogsToday,
     patrolLogsWeek,
     totalPatrolMileage,
+    totalAccounts,
   ] = await Promise.all([
     db.user.count({ where: { isActive: true } }),
     db.violation.count({ where: { status: { in: ['DETECTED', 'CONFIRMED', 'NOTIFIED'] } } }),
@@ -56,6 +68,7 @@ export default async function AdminPage() {
     db.patrolLog.count({ where: { patrolDate: { gte: todayStart } } }),
     db.patrolLog.count({ where: { patrolDate: { gte: weekAgo } } }),
     db.patrolLog.aggregate({ _sum: { mileage: true }, where: { patrolDate: { gte: weekAgo } } }),
+    db.customerAccount.count(),
   ]);
 
   return (
@@ -140,45 +153,29 @@ export default async function AdminPage() {
         </div>
       </div>
 
-      {/* KPI Grid — Row 3: Field Operations */}
+      {/* KPI Grid — Row 3: Field Operations & System */}
       <div>
         <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
-          Field Operations
+          Field Operations & System
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <KpiCard
-            label="Patrol Logs Today"
-            value={patrolLogsToday}
-            sub="Shifts submitted today"
-            icon={ClipboardList}
-            variant={patrolLogsToday > 0 ? 'success' : 'default'}
-          />
-          <KpiCard
             label="Patrols This Week"
             value={patrolLogsWeek}
-            sub="Rolling 7-day window"
+            sub={`${patrolLogsToday} today · ${Math.round(totalPatrolMileage._sum.mileage ?? 0)} mi driven`}
             icon={Car}
             variant={patrolLogsWeek > 0 ? 'success' : 'default'}
           />
           <KpiCard
-            label="Patrol Mileage"
-            value={Math.round(totalPatrolMileage._sum.mileage ?? 0)}
-            sub="Miles driven this week"
-            icon={MapPin}
+            label="Customer Accounts"
+            value={totalAccounts.toLocaleString('en-US')}
+            sub="Total service accounts"
+            icon={Building2}
           />
-        </div>
-      </div>
-
-      {/* KPI Grid — Row 4: System */}
-      <div>
-        <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
-          System & Users
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <KpiCard
-            label="Total Users"
+            label="Platform Users"
             value={totalUsers}
-            sub="Active platform users"
+            sub="Active staff accounts"
             icon={Users}
           />
           <KpiCard
@@ -193,10 +190,18 @@ export default async function AdminPage() {
 
       {/* Recent Violations Table */}
       <div>
-        <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
-          Recent Violations
-        </h2>
         <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+            <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              Recent Violations
+            </h2>
+            <Link
+              href="/enforcement/violations"
+              className="text-xs text-teal-600 hover:text-teal-700 font-medium"
+            >
+              View all →
+            </Link>
+          </div>
           {recentViolations.length === 0 ? (
             <div className="p-8 text-center text-slate-400">
               <Activity className="w-8 h-8 mx-auto mb-2 opacity-50" />
@@ -214,7 +219,7 @@ export default async function AdminPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {recentViolations.map((v: any) => (
+                {recentViolations.map((v) => (
                   <tr key={v.id} className="hover:bg-slate-50 transition-colors">
                     <td className="px-4 py-3">
                       <p className="font-medium text-slate-900">
@@ -223,17 +228,17 @@ export default async function AdminPage() {
                       <p className="text-xs text-slate-500">{v.account?.serviceAddress}</p>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-50 text-red-700">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700">
                         {v.violationType.replace(/_/g, ' ')}
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-50 text-amber-700">
-                        {v.status}
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLES[v.status] ?? 'bg-slate-50 text-slate-500'}`}>
+                        {v.status.replace(/_/g, ' ')}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-slate-500">
-                      {new Date(v.detectedAt).toLocaleDateString()}
+                    <td className="px-4 py-3 text-slate-500" suppressHydrationWarning>
+                      {new Date(v.detectedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                     </td>
                   </tr>
                 ))}

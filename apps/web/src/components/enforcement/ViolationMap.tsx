@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import type { Map as LeafletMap, LayerGroup } from 'leaflet';
+import type { Map as LeafletMap, LayerGroup, GeoJSON as LeafletGeoJSON } from 'leaflet';
 import Link from 'next/link';
 
 // ── Types ─────────────────────────────────────
@@ -36,7 +36,7 @@ const STATUS_COLORS: Record<string, string> = {
 const STATUS_LABELS: Record<string, string> = {
   DETECTED:   'Detected',
   CONFIRMED:  'Confirmed',
-  NOTIFIED:   'Noticed',
+  NOTIFIED:   'Notified',
   SR_CREATED: 'SR Created',
   RESOLVED:   'Resolved',
   DISMISSED:  'Dismissed',
@@ -51,15 +51,30 @@ const TYPE_LABELS: Record<string, string> = {
   PROHIBITED_IRRIGATION: 'Prohibited Irrigation',
 };
 
+// ── Zone color palette ───────────────────────
+
+const ZONE_COLORS = [
+  '#3b82f6', '#8b5cf6', '#ec4899', '#06b6d4',
+  '#10b981', '#f59e0b', '#6366f1', '#14b8a6',
+];
+
+function zoneColor(index: number): string {
+  return ZONE_COLORS[index % ZONE_COLORS.length];
+}
+
 // ── Component ─────────────────────────────────
 
 export default function ViolationMap({ violations }: ViolationMapProps) {
-  const mapRef     = useRef<LeafletMap | null>(null);
-  const mapDivRef  = useRef<HTMLDivElement>(null);
-  const markersRef = useRef<LayerGroup | null>(null);
+  const mapRef      = useRef<LeafletMap | null>(null);
+  const mapDivRef   = useRef<HTMLDivElement>(null);
+  const markersRef  = useRef<LayerGroup | null>(null);
+  const zonesRef    = useRef<LayerGroup | null>(null);
 
-  const [filter, setFilter] = useState<string>('ACTIVE');
-  const [mapReady, setMapReady] = useState(false);
+  const [filter, setFilter]       = useState<string>('ACTIVE');
+  const [mapReady, setMapReady]   = useState(false);
+  const [showZones, setShowZones] = useState(false);
+  const [zonesLoading, setZonesLoading] = useState(false);
+  const [zonesLoaded, setZonesLoaded]   = useState(false);
 
   const filtered = violations.filter((v) => {
     if (filter === 'ACTIVE')   return v.status !== 'RESOLVED' && v.status !== 'DISMISSED';
@@ -113,7 +128,9 @@ export default function ViolationMap({ violations }: ViolationMapProps) {
       L.control.scale({ imperial: true, metric: false }).addTo(map);
 
       const markers = L.layerGroup().addTo(map);
+      const zones = L.layerGroup();
       markersRef.current = markers;
+      zonesRef.current = zones;
       mapRef.current = map;
       setMapReady(true);
     });
@@ -122,6 +139,88 @@ export default function ViolationMap({ violations }: ViolationMapProps) {
       if (mapRef.current) { mapRef.current.remove(); mapRef.current = null; }
     };
   }, []);
+
+  // ── Load zone polygons from ArcGIS ─────────
+  const loadZones = useCallback(async () => {
+    if (zonesLoaded || zonesLoading || !mapRef.current || !zonesRef.current) return;
+    setZonesLoading(true);
+
+    try {
+      const res = await fetch('/api/gis/sections');
+      if (!res.ok) throw new Error('Failed to load zones');
+      const data = await res.json();
+
+      const L = await import('leaflet');
+      zonesRef.current!.clearLayers();
+
+      const zoneNames = new Map<string, number>();
+      let colorIdx = 0;
+
+      (data.features ?? []).forEach((feature: { attributes: Record<string, unknown>; geometry?: { rings?: number[][][] } }) => {
+        if (!feature.geometry?.rings) return;
+
+        // Convert ArcGIS rings to Leaflet polygon coords (swap x,y to lat,lng)
+        const latlngs = feature.geometry.rings.map((ring: number[][]) =>
+          ring.map(([x, y]: number[]) => [y, x] as [number, number])
+        );
+
+        const zoneName = String(
+          feature.attributes.ZONE ?? feature.attributes.Zone ??
+          feature.attributes.SECTION ?? feature.attributes.Section ??
+          feature.attributes.NAME ?? feature.attributes.Name ?? `Zone ${colorIdx}`
+        );
+
+        if (!zoneNames.has(zoneName)) {
+          zoneNames.set(zoneName, colorIdx++);
+        }
+        const color = zoneColor(zoneNames.get(zoneName)!);
+
+        const polygon = L.polygon(latlngs, {
+          color,
+          weight: 2,
+          opacity: 0.7,
+          fillColor: color,
+          fillOpacity: 0.12,
+        });
+
+        // Popup with zone info
+        const attrs = feature.attributes;
+        const popupLines = Object.entries(attrs)
+          .filter(([, v]) => v != null && v !== '')
+          .slice(0, 8)
+          .map(([k, v]) => `<strong>${k}:</strong> ${v}`)
+          .join('<br/>');
+
+        polygon.bindPopup(
+          `<div style="font-family:system-ui,sans-serif;font-size:12px;max-width:260px;">
+            <div style="font-weight:700;margin-bottom:6px;color:${color};">${zoneName}</div>
+            ${popupLines}
+          </div>`,
+          { maxWidth: 280 }
+        );
+
+        zonesRef.current!.addLayer(polygon);
+      });
+
+      setZonesLoaded(true);
+    } catch (err) {
+      console.error('Failed to load GIS zones:', err);
+    } finally {
+      setZonesLoading(false);
+    }
+  }, [zonesLoaded, zonesLoading]);
+
+  // ── Toggle zone layer visibility ───────────
+  useEffect(() => {
+    if (!mapRef.current || !zonesRef.current) return;
+
+    if (showZones) {
+      loadZones();
+      zonesRef.current.addTo(mapRef.current);
+    } else {
+      zonesRef.current.remove();
+    }
+  }, [showZones, mapReady, loadZones]);
 
   // ── Render markers ──────────────────────────
   useEffect(() => {
@@ -226,7 +325,7 @@ export default function ViolationMap({ violations }: ViolationMapProps) {
             { key: 'ACTIVE',   label: `Active (${activeCount})` },
             { key: 'DETECTED', label: `Detected (${counts['DETECTED'] ?? 0})` },
             { key: 'CONFIRMED', label: `Confirmed (${counts['CONFIRMED'] ?? 0})` },
-            { key: 'NOTIFIED', label: `Noticed (${counts['NOTIFIED'] ?? 0})` },
+            { key: 'NOTIFIED', label: `Notified (${counts['NOTIFIED'] ?? 0})` },
             { key: 'RESOLVED', label: `Resolved (${counts['RESOLVED'] ?? 0})` },
             { key: 'ALL',      label: `All (${violations.length})` },
           ].map(({ key, label }) => (
@@ -242,6 +341,19 @@ export default function ViolationMap({ violations }: ViolationMapProps) {
               {label}
             </button>
           ))}
+
+          {/* Zone overlay toggle */}
+          <div className="h-5 w-px bg-slate-200 mx-1" />
+          <button
+            onClick={() => setShowZones(!showZones)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
+              showZones
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
+            }`}
+          >
+            {zonesLoading ? 'Loading...' : showZones ? 'Zones On' : 'Zones'}
+          </button>
         </div>
         <span className="text-xs text-slate-500">
           Showing {filtered.length} violation{filtered.length !== 1 ? 's' : ''} on map
@@ -257,7 +369,7 @@ export default function ViolationMap({ violations }: ViolationMapProps) {
         </span>
         <span className="flex items-center gap-1.5">
           <span className="w-3 h-3 rounded-full bg-yellow-500 border border-white shadow-sm" />
-          Noticed
+          Notified
         </span>
         <span className="flex items-center gap-1.5">
           <span className="w-3 h-3 rounded-full bg-orange-500 border border-white shadow-sm" />
@@ -267,6 +379,15 @@ export default function ViolationMap({ violations }: ViolationMapProps) {
           <span className="w-3 h-3 rounded-full bg-green-500 border border-white shadow-sm" />
           Resolved
         </span>
+        {showZones && (
+          <>
+            <span className="h-3 w-px bg-slate-200" />
+            <span className="flex items-center gap-1.5">
+              <span className="w-3 h-3 rounded border border-blue-500 bg-blue-500/20" />
+              Watering Zones
+            </span>
+          </>
+        )}
       </div>
 
       {/* Map */}

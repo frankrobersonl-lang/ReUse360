@@ -8,7 +8,7 @@ if (!resendApiKey) {
 
 export const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
-const FROM_ADDRESS = 'ReUse360 Plus <noreply@re-use360.vercel.app>';
+const FROM_ADDRESS = 'ReUse360 Plus <onboarding@resend.dev>';
 
 interface SendEmailParams {
   to: string;

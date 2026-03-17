@@ -81,14 +81,8 @@ export async function POST(req: NextRequest) {
   }
 
   const account = violation.account;
-  const recipientEmail = account.email;
-
-  if (!recipientEmail) {
-    return Response.json(
-      { error: 'No email address on file for this account' },
-      { status: 422 },
-    );
-  }
+  const TEST_FALLBACK_EMAIL = 'frankrobersonl@gmail.com';
+  const recipientEmail = account.email || TEST_FALLBACK_EMAIL;
 
   // Compute offense number
   const priorCount = await db.violation.count({

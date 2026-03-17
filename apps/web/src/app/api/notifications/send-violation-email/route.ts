@@ -48,6 +48,7 @@ export async function POST(req: NextRequest) {
   }
 
   const { violationId, emailType } = body;
+  console.log(`[send-email] ① Received request — violationId=${violationId} emailType=${emailType}`);
 
   if (!violationId || !emailType) {
     return Response.json(
@@ -77,12 +78,18 @@ export async function POST(req: NextRequest) {
   });
 
   if (!violation) {
+    console.error(`[send-email] ② Violation NOT FOUND in DB — violationId=${violationId}`);
     return Response.json({ error: 'Violation not found' }, { status: 404 });
   }
+
+  console.log(`[send-email] ② Violation found — case=${violation.caseNumber} account=${violation.accountId} type=${violation.violationType}`);
 
   const account = violation.account;
   const TEST_FALLBACK_EMAIL = 'frankrobersonl@gmail.com';
   const recipientEmail = account.email || TEST_FALLBACK_EMAIL;
+  const usedFallback = !account.email;
+
+  console.log(`[send-email] ③ Recipient — ${maskEmail(recipientEmail)} (fallback=${usedFallback}, accountEmail=${account.email ? maskEmail(account.email) : 'NONE'})`);
 
   // Compute offense number
   const priorCount = await db.violation.count({
@@ -148,6 +155,8 @@ export async function POST(req: NextRequest) {
       return Response.json({ error: 'Invalid email type' }, { status: 400 });
   }
 
+  console.log(`[send-email] ④ Template ready — subject="${emailContent.subject}" htmlLength=${emailContent.html.length}`);
+
   // Send email
   const result = await sendEmail({
     to: recipientEmail,
@@ -155,20 +164,36 @@ export async function POST(req: NextRequest) {
     html: emailContent.html,
   });
 
+  console.log(`[send-email] ⑤ Resend response — success=${result.success} messageId=${result.messageId} error=${result.error}`);
+
   // Log to EmailLog
-  const emailLog = await db.emailLog.create({
-    data: {
-      violationId: violation.id,
-      accountId: account.accountId,
-      emailType: emailType as EmailType,
+  let emailLog;
+  try {
+    emailLog = await db.emailLog.create({
+      data: {
+        violationId: violation.id,
+        accountId: account.accountId,
+        emailType: emailType as EmailType,
+        recipient: maskEmail(recipientEmail),
+        subject: emailContent.subject,
+        resendId: result.messageId,
+        status: result.success ? 'SENT' : 'FAILED',
+        errorMsg: result.error,
+        sentBy: guard.user.clerkId,
+      },
+    });
+    console.log(`[send-email] ⑥ EmailLog created — id=${emailLog.id} status=${emailLog.status}`);
+  } catch (dbErr) {
+    console.error(`[send-email] ⑥ EmailLog FAILED to create:`, dbErr);
+    return Response.json({
+      success: result.success,
+      messageId: result.messageId,
+      emailLogId: null,
       recipient: maskEmail(recipientEmail),
-      subject: emailContent.subject,
-      resendId: result.messageId,
-      status: result.success ? 'SENT' : 'FAILED',
-      errorMsg: result.error,
-      sentBy: guard.user.clerkId,
-    },
-  });
+      error: result.error,
+      dbError: dbErr instanceof Error ? dbErr.message : 'Unknown DB error',
+    });
+  }
 
   return Response.json({
     success: result.success,

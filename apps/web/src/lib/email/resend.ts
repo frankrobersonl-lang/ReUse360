@@ -14,6 +14,7 @@ const FROM_ADDRESS = 'ReUse360 Plus <onboarding@resend.dev>';
 
 interface SendEmailParams {
   to: string;
+  cc?: string;
   subject: string;
   html: string;
 }
@@ -39,13 +40,15 @@ export async function sendEmail(params: SendEmailParams): Promise<SendResult> {
   }
 
   try {
-    console.log(`[email] Calling resend.emails.send() — from=${FROM_ADDRESS} to=${params.to}`);
-    const { data, error } = await resend.emails.send({
+    console.log(`[email] Calling resend.emails.send() — from=${FROM_ADDRESS} to=${params.to} cc=${params.cc ?? 'none'}`);
+    const sendPayload: { from: string; to: string; cc?: string; subject: string; html: string } = {
       from: FROM_ADDRESS,
       to: params.to,
       subject: params.subject,
       html: params.html,
-    });
+    };
+    if (params.cc) sendPayload.cc = params.cc;
+    const { data, error } = await resend.emails.send(sendPayload);
 
     console.log(`[email] Resend response — data:`, JSON.stringify(data));
     console.log(`[email] Resend response — error:`, JSON.stringify(error));

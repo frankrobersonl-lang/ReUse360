@@ -85,11 +85,27 @@ export async function POST(req: NextRequest) {
   console.log(`[send-email] ② Violation found — case=${violation.caseNumber} account=${violation.accountId} type=${violation.violationType}`);
 
   const account = violation.account;
-  const TEST_FALLBACK_EMAIL = 'frankrobersonl@gmail.com';
-  const recipientEmail = account.email || TEST_FALLBACK_EMAIL;
-  const usedFallback = !account.email;
+  const DEV_EMAIL = 'frankrobersonl@gmail.com';
 
-  console.log(`[send-email] ③ Recipient — ${maskEmail(recipientEmail)} (fallback=${usedFallback}, accountEmail=${account.email ? maskEmail(account.email) : 'NONE'})`);
+  // Check if the account email is a real deliverable address
+  function isDeliverableEmail(email: string | null | undefined): email is string {
+    if (!email) return false;
+    const lower = email.toLowerCase();
+    // Must contain @ and a real TLD (at least 2 chars after last dot)
+    const tldMatch = /\.[a-z]{2,}$/.test(lower);
+    if (!tldMatch) return false;
+    // Reject seed/test/placeholder addresses
+    const fakeParts = ['test', 'example', 'placeholder', 'seed', 'fake', 'noreply', 'nobody'];
+    if (fakeParts.some(p => lower.includes(p))) return false;
+    return true;
+  }
+
+  const recipientEmail = isDeliverableEmail(account.email) ? account.email : DEV_EMAIL;
+  const usedFallback = recipientEmail === DEV_EMAIL;
+
+  console.log(`[send-email] ③ Account email on file: ${account.email ?? 'NONE'}`);
+  console.log(`[send-email] ③ Deliverable check: ${isDeliverableEmail(account.email) ? 'PASS' : 'FAIL — using fallback'}`);
+  console.log(`[send-email] ③ Sending to: ${recipientEmail}, CC: ${DEV_EMAIL}`);
 
   // Compute offense number
   const priorCount = await db.violation.count({
@@ -157,9 +173,10 @@ export async function POST(req: NextRequest) {
 
   console.log(`[send-email] ④ Template ready — subject="${emailContent.subject}" htmlLength=${emailContent.html.length}`);
 
-  // Send email
+  // Send email — always CC dev email during development/demo
   const result = await sendEmail({
     to: recipientEmail,
+    cc: recipientEmail !== DEV_EMAIL ? DEV_EMAIL : undefined,
     subject: emailContent.subject,
     html: emailContent.html,
   });

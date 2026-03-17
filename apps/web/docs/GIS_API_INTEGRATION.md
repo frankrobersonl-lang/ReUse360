@@ -50,7 +50,15 @@ GET …/FeatureServer/0/query?where=Status='DETECTED'&outFields=*&returnGeometry
 | **Purpose** | Watering zone section polygons for map overlay and schedule lookup |
 | **Geometry Type** | Polygon (esriGeometryPolygon) |
 | **Spatial Reference** | WKID 4326 (WGS 84) |
-| **Access** | Public (read-only) |
+| **Access** | **Requires ArcGIS Token** (error 499 "Token Required" — see note below) |
+
+> **⚠ Token Required (as of 2026-03-17):** Despite the "PublicView" name, this
+> layer returns `{"error":{"code":499,"message":"Token Required","messageCode":"GWM_0003"}}`.
+> An ArcGIS Online token or OAuth2 credential is needed to query it.
+> Until a service token is provisioned, the `/api/gis/sections` route falls back
+> to synthetic zone polygons built from local `Parcel.wateringZone` data.
+> **Action item:** Request a read-only application token from Christopher Richardson
+> or the Pinellas County AGOL administrator, then set it as `ARCGIS_TOKEN` env var.
 
 **Key Fields:**
 

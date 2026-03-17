@@ -99,15 +99,20 @@ export async function queryFeatureService(
       url.searchParams.set('orderByFields', queryOpts.orderByFields);
     }
 
+    console.log(`[ArcGIS] Querying: ${url.toString().slice(0, 120)}...`);
     const res = await fetch(url.toString(), { next: { revalidate: 300 } });
     if (!res.ok) {
+      console.error(`[ArcGIS] HTTP error: ${res.status} ${res.statusText} for ${serviceUrl}`);
       throw new Error(`ArcGIS query failed: ${res.status} ${res.statusText}`);
     }
 
-    const data = (await res.json()) as ArcGISQueryResult & { error?: { message: string } };
+    const data = (await res.json()) as ArcGISQueryResult & { error?: { code?: number; message: string; messageCode?: string } };
     if (data.error) {
-      throw new Error(`ArcGIS error: ${data.error.message}`);
+      console.error(`[ArcGIS] Service error: code=${data.error.code} message="${data.error.message}" messageCode=${data.error.messageCode ?? 'none'} service=${serviceUrl}`);
+      throw new Error(`ArcGIS error: ${data.error.message} (code ${data.error.code ?? 'unknown'})`);
     }
+
+    console.log(`[ArcGIS] Got ${data.features?.length ?? 0} features from ${serviceUrl.split('/services/')[1]?.split('/')[0] ?? serviceUrl}`);
 
     if (!fields) fields = data.fields;
     if (!geometryType) geometryType = data.geometryType;

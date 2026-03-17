@@ -87,25 +87,12 @@ export async function POST(req: NextRequest) {
   const account = violation.account;
   const DEV_EMAIL = 'frankrobersonl@gmail.com';
 
-  // Check if the account email is a real deliverable address
-  function isDeliverableEmail(email: string | null | undefined): email is string {
-    if (!email) return false;
-    const lower = email.toLowerCase();
-    // Must contain @ and a real TLD (at least 2 chars after last dot)
-    const tldMatch = /\.[a-z]{2,}$/.test(lower);
-    if (!tldMatch) return false;
-    // Reject seed/test/placeholder addresses
-    const fakeParts = ['test', 'example', 'placeholder', 'seed', 'fake', 'noreply', 'nobody'];
-    if (fakeParts.some(p => lower.includes(p))) return false;
-    return true;
-  }
-
-  const recipientEmail = isDeliverableEmail(account.email) ? account.email : DEV_EMAIL;
-  const usedFallback = recipientEmail === DEV_EMAIL;
+  // During dev/demo: always deliver to the dev inbox.
+  // In production, swap to: account.email ?? DEV_EMAIL
+  const recipientEmail = DEV_EMAIL;
 
   console.log(`[send-email] ③ Account email on file: ${account.email ?? 'NONE'}`);
-  console.log(`[send-email] ③ Deliverable check: ${isDeliverableEmail(account.email) ? 'PASS' : 'FAIL — using fallback'}`);
-  console.log(`[send-email] ③ Sending to: ${recipientEmail}, CC: ${DEV_EMAIL}`);
+  console.log(`[send-email] ③ Final recipient (dev mode): ${recipientEmail}`);
 
   // Compute offense number
   const priorCount = await db.violation.count({
@@ -173,10 +160,9 @@ export async function POST(req: NextRequest) {
 
   console.log(`[send-email] ④ Template ready — subject="${emailContent.subject}" htmlLength=${emailContent.html.length}`);
 
-  // Send email — always CC dev email during development/demo
+  // Send email
   const result = await sendEmail({
     to: recipientEmail,
-    cc: recipientEmail !== DEV_EMAIL ? DEV_EMAIL : undefined,
     subject: emailContent.subject,
     html: emailContent.html,
   });

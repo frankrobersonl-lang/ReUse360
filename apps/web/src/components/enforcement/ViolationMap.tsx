@@ -102,6 +102,9 @@ export default function ViolationMap({ violations }: ViolationMapProps) {
   const [zonesLoading, setZonesLoading] = useState(false);
   const [zonesLoaded, setZonesLoaded]   = useState(false);
 
+  // Zone error state
+  const [zonesError, setZonesError]       = useState(false);
+
   // Parcel search
   const [searchQuery, setSearchQuery]     = useState('');
   const [searchLoading, setSearchLoading] = useState(false);
@@ -194,9 +197,13 @@ export default function ViolationMap({ violations }: ViolationMapProps) {
   const loadZones = useCallback(async () => {
     if (zonesLoaded || zonesLoading || !mapRef.current || !zonesRef.current) return;
     setZonesLoading(true);
+    setZonesError(false);
 
     try {
-      const res = await fetch('/api/gis/sections');
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10000);
+      const res = await fetch('/api/gis/sections', { signal: controller.signal });
+      clearTimeout(timeout);
       if (!res.ok) throw new Error('Failed to load zones');
       const data = await res.json();
 
@@ -264,6 +271,8 @@ export default function ViolationMap({ violations }: ViolationMapProps) {
       setZonesLoaded(true);
     } catch (err) {
       console.error('Failed to load GIS zones:', err);
+      setZonesError(true);
+      setShowZones(false);
     } finally {
       setZonesLoading(false);
     }
@@ -409,7 +418,12 @@ export default function ViolationMap({ violations }: ViolationMapProps) {
 
     try {
       const res = await fetch(`/api/parcel-lookup?q=${encodeURIComponent(searchQuery.trim())}`);
-      if (!res.ok) throw new Error('Search failed');
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        const msg = errData?.error ?? errData?.message ?? `Server error (${res.status})`;
+        setSearchError(msg);
+        return;
+      }
       const data = await res.json();
       const result = data.results?.[0] ?? data.result ?? null;
 
@@ -444,10 +458,12 @@ export default function ViolationMap({ violations }: ViolationMapProps) {
           mapRef.current.setView([result.lat, result.lon], 16);
         }
       } else {
-        setSearchError('No parcel found for that query.');
+        setSearchError(`No parcel found matching "${searchQuery.trim()}". Try a full address (e.g. "100 S Missouri Ave") or parcel ID.`);
       }
-    } catch {
-      setSearchError('Search failed. Please try again.');
+    } catch (err) {
+      setSearchError(err instanceof Error && err.message !== 'Failed to fetch'
+        ? err.message
+        : 'Unable to reach the server. Check your connection and try again.');
     } finally {
       setSearchLoading(false);
     }
@@ -491,14 +507,18 @@ export default function ViolationMap({ violations }: ViolationMapProps) {
 
           <div className="h-5 w-px bg-slate-200 mx-1" />
           <button
-            onClick={() => setShowZones(!showZones)}
+            onClick={() => { if (!zonesError) setShowZones(!showZones); }}
+            disabled={zonesError}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
-              showZones
-                ? 'bg-blue-600 text-white border-blue-600'
-                : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
+              zonesError
+                ? 'bg-red-50 text-red-400 border-red-200 cursor-not-allowed'
+                : showZones
+                  ? 'bg-blue-600 text-white border-blue-600'
+                  : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
             }`}
+            title={zonesError ? 'Zone data unavailable — ArcGIS timed out' : undefined}
           >
-            {zonesLoading ? 'Loading...' : showZones ? 'Zones On' : 'Zones'}
+            {zonesLoading ? 'Loading...' : zonesError ? 'Zones Unavailable' : showZones ? 'Zones On' : 'Zones'}
           </button>
         </div>
         <span className="text-xs text-slate-500 tabular-nums">
@@ -514,6 +534,7 @@ export default function ViolationMap({ violations }: ViolationMapProps) {
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
+            autoComplete="off"
             className="text-xs border border-slate-200 rounded-lg px-2 py-1.5 text-slate-700 bg-white focus:outline-none focus:ring-1 focus:ring-teal-500"
           >
             <option value="ALL">All Types</option>
@@ -529,6 +550,7 @@ export default function ViolationMap({ violations }: ViolationMapProps) {
           <select
             value={dateRange}
             onChange={(e) => setDateRange(e.target.value)}
+            autoComplete="off"
             className="text-xs border border-slate-200 rounded-lg px-2 py-1.5 text-slate-700 bg-white focus:outline-none focus:ring-1 focus:ring-teal-500"
           >
             <option value="ALL">All Time</option>

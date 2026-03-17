@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { guardApi } from '@/lib/auth.server';
 import { queryFeatureService, ARCGIS_SERVICES } from '@/lib/gis/arcgis';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600; // 1-hour server-side cache for zone polygons
 
 /**
  * GET /api/gis/sections

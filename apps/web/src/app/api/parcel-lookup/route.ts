@@ -39,6 +39,7 @@ export async function GET(req: NextRequest) {
   }
 
   const q = query.trim()
+  const normalized = normalizeAddress(q)
 
   try {
     // Step 1: Search local DB (fast, enriched with violation data)
@@ -49,15 +50,18 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ results: dbResults, source: 'database' })
     }
 
-    // Step 2: Fall back to ArcGIS ParcelPropertyInfo
-    const arcgisResult = await searchArcGIS(q)
+    // Step 2: Fall back to ArcGIS ParcelPropertyInfo (use normalized address)
+    const arcgisResult = await searchArcGIS(normalized)
 
     if (arcgisResult) {
       await logLookup(userId, q, arcgisResult)
       return NextResponse.json({ results: [arcgisResult], source: 'arcgis' })
     }
 
-    return NextResponse.json({ results: [], message: 'No matching parcel found' })
+    return NextResponse.json({
+      results: [],
+      message: `No parcel found. Try: ${normalized}`,
+    })
   } catch (err) {
     console.error('Parcel lookup error:', err)
     return NextResponse.json(
@@ -159,6 +163,58 @@ async function searchLocalDB(q: string): Promise<ParcelResult[]> {
     }))
 }
 
+/**
+ * Normalize an address for ArcGIS SITEADDR matching:
+ * - Uppercase everything (SITEADDR stores uppercase)
+ * - Strip city/state/zip suffix (SITEADDR is street only)
+ * - Normalize common abbreviations
+ * - Collapse extra whitespace
+ */
+function normalizeAddress(raw: string): string {
+  let addr = raw.toUpperCase().replace(/\s+/g, ' ').trim()
+
+  // Strip city, state, zip suffix (everything after last comma)
+  // e.g. "100 S MISSOURI AVE, CLEARWATER" → "100 S MISSOURI AVE"
+  addr = addr.replace(/,\s*.+$/, '').trim()
+
+  // Normalize common street type abbreviations
+  const abbrevs: Record<string, string> = {
+    AVENUE: 'AVE', AV: 'AVE',
+    STREET: 'ST',
+    BOULEVARD: 'BLVD',
+    DRIVE: 'DR',
+    ROAD: 'RD',
+    LANE: 'LN',
+    COURT: 'CT',
+    CIRCLE: 'CIR',
+    PLACE: 'PL',
+    TERRACE: 'TER',
+    HIGHWAY: 'HWY',
+    PARKWAY: 'PKWY',
+    WAY: 'WAY',
+  }
+
+  // Replace full words at end or mid-address
+  for (const [full, abbr] of Object.entries(abbrevs)) {
+    addr = addr.replace(new RegExp(`\\b${full}\\b`, 'g'), abbr)
+  }
+
+  return addr.replace(/\s+/g, ' ').trim()
+}
+
+/**
+ * Extract a short street fragment for fuzzy fallback.
+ * Takes the house number + street name (first 3 tokens), dropping the type.
+ * e.g. "100 S MISSOURI AVE" → "100 S MISSOURI"
+ */
+function extractStreetFragment(normalized: string): string | null {
+  const parts = normalized.split(' ')
+  // Need at least "123 NAME" (2 tokens)
+  if (parts.length < 2) return null
+  // Take up to 3 tokens (number + optional directional + street name)
+  return parts.slice(0, Math.min(parts.length - 1, 3)).join(' ')
+}
+
 async function searchArcGIS(q: string): Promise<ParcelResult | null> {
   // Detect if it's a parcel ID pattern (digits and hyphens)
   const isParcelId = /^[\d-]+$/.test(q) && q.length >= 5
@@ -167,16 +223,22 @@ async function searchArcGIS(q: string): Promise<ParcelResult | null> {
     ? await lookupParcel({ parcelId: q })
     : await lookupParcel({ address: q })
 
-  if (!feature) {
-    // Try multi-result search for addresses
-    if (!isParcelId) {
-      const features = await searchParcels(q, 1)
-      if (features.length > 0) return mapArcGISFeature(features[0])
-    }
-    return null
+  if (feature) return mapArcGISFeature(feature)
+
+  if (isParcelId) return null
+
+  // Try multi-result search with full query
+  const features = await searchParcels(q, 1)
+  if (features.length > 0) return mapArcGISFeature(features[0])
+
+  // Fuzzy fallback: search by street fragment only (drop street type)
+  const fragment = extractStreetFragment(q)
+  if (fragment && fragment !== q) {
+    const fuzzyFeatures = await searchParcels(fragment, 5)
+    if (fuzzyFeatures.length > 0) return mapArcGISFeature(fuzzyFeatures[0])
   }
 
-  return mapArcGISFeature(feature)
+  return null
 }
 
 function mapArcGISFeature(feature: { attributes: Record<string, unknown>; geometry?: unknown }): ParcelResult {

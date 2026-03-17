@@ -458,7 +458,8 @@ export default function ViolationMap({ violations }: ViolationMapProps) {
           mapRef.current.setView([result.lat, result.lon], 16);
         }
       } else {
-        setSearchError(`No parcel found matching "${searchQuery.trim()}". Try a full address (e.g. "100 S Missouri Ave") or parcel ID.`);
+        const hint = data.message ?? `No parcel found matching "${searchQuery.trim()}". Try a full address (e.g. "100 S MISSOURI AVE") or parcel ID.`;
+        setSearchError(hint);
       }
     } catch (err) {
       setSearchError(err instanceof Error && err.message !== 'Failed to fetch'

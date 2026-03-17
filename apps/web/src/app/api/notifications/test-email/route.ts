@@ -1,12 +1,9 @@
 import { resend } from '@/lib/email/resend';
 
 /**
- * GET /api/notifications/test-email
- *
- * Sends a bare-bones test email to verify Resend is configured correctly.
- * No auth required — this is a temporary diagnostic endpoint.
+ * Shared handler — sends a test email and returns JSON result.
  */
-export async function GET() {
+async function handleTestEmail() {
   const to = 'frankrobersonl@gmail.com';
   const timestamp = new Date().toISOString();
 
@@ -65,4 +62,14 @@ export async function GET() {
       timestamp,
     });
   }
+}
+
+/** GET /api/notifications/test-email — hit from browser URL bar */
+export async function GET() {
+  return handleTestEmail();
+}
+
+/** POST /api/notifications/test-email — hit from app/fetch */
+export async function POST() {
+  return handleTestEmail();
 }

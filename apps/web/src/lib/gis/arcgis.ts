@@ -176,6 +176,64 @@ export async function getZoneSections(lat: number, lon: number): Promise<ArcGISF
 }
 
 /**
+ * Query ArcGIS violations layer with optional status/type/bbox filters.
+ */
+export async function queryArcGISViolations(params: {
+  status?: string;
+  violationType?: string;
+  bbox?: { xmin: number; ymin: number; xmax: number; ymax: number };
+  limit?: number;
+} = {}): Promise<ArcGISFeature[]> {
+  const clauses: string[] = [];
+  if (params.status) {
+    clauses.push(`Status = '${params.status.replace(/'/g, "''")}'`);
+  }
+  if (params.violationType) {
+    clauses.push(`ViolationType = '${params.violationType.replace(/'/g, "''")}'`);
+  }
+  const where = clauses.length > 0 ? clauses.join(' AND ') : '1=1';
+
+  let geometry: string | undefined;
+  if (params.bbox) {
+    geometry = JSON.stringify({ ...params.bbox, spatialReference: { wkid: 4326 } });
+  }
+
+  const result = await queryFeatureService(ARCGIS_SERVICES.violations, {
+    where,
+    geometry,
+    geometryType: geometry ? 'esriGeometryEnvelope' : undefined,
+    returnGeometry: true,
+    resultRecordCount: Math.min(params.limit ?? 500, 2000),
+  });
+
+  return result.features;
+}
+
+/**
+ * Search parcels by address text, returning multiple results.
+ */
+export async function searchParcels(address: string, limit = 10): Promise<ArcGISFeature[]> {
+  const escaped = address.replace(/'/g, "''");
+  const result = await queryFeatureService(ARCGIS_SERVICES.parcels, {
+    where: `SITEADDR LIKE '%${escaped}%'`,
+    returnGeometry: true,
+    resultRecordCount: limit,
+  });
+  return result.features;
+}
+
+/**
+ * Get all zone sections (paginated) for full map overlay.
+ */
+export async function getAllZoneSections(): Promise<ArcGISQueryResult> {
+  return queryFeatureService(ARCGIS_SERVICES.sections, {
+    where: '1=1',
+    returnGeometry: true,
+    paginate: true,
+  });
+}
+
+/**
  * Convert ArcGIS ring geometry to GeoJSON polygon.
  */
 export function ringsToGeoJSON(

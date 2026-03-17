@@ -19,13 +19,28 @@ const sans = DM_Sans({
   display: 'swap',
 });
 
+/* ── Deterministic particle positions (avoids Math.random SSR/client mismatch) */
+const PARTICLE_POSITIONS = [
+  { left: 12, top: 8 }, { left: 87, top: 23 }, { left: 34, top: 67 }, { left: 56, top: 12 },
+  { left: 78, top: 89 }, { left: 23, top: 45 }, { left: 91, top: 56 }, { left: 45, top: 34 },
+  { left: 67, top: 78 }, { left: 5, top: 91 }, { left: 38, top: 15 }, { left: 72, top: 42 },
+  { left: 15, top: 63 }, { left: 83, top: 7 }, { left: 50, top: 50 }, { left: 28, top: 82 },
+  { left: 62, top: 28 }, { left: 95, top: 71 }, { left: 8, top: 38 }, { left: 42, top: 95 },
+];
+const PARTICLE_DELAYS = [
+  -3.2, -7.1, -1.5, -9.8, -4.6, -11.3, -0.8, -6.4, -2.9, -8.7,
+  -5.1, -10.5, -3.8, -7.6, -1.2, -9.0, -4.3, -11.8, -6.9, -2.4,
+];
+
 /* ── KPI counter hook ──────────────────────────────────── */
 function useCountUp(end: number, duration = 1500, decimals = 0) {
-  const [value, setValue] = useState(0);
+  const [value, setValue] = useState(end);
   const ref = useRef<HTMLDivElement>(null);
   const started = useRef(false);
 
   useEffect(() => {
+    // Reset to 0 on mount so the animation runs from 0 → end
+    setValue(0);
     const el = ref.current;
     if (!el) return;
     const observer = new IntersectionObserver(
@@ -106,9 +121,9 @@ export default function LandingPage() {
     }
   }, [isLoaded, isSignedIn, user, router]);
 
-  const staffHours = useCountUp(780, 2000);
-  const costAvoidance = useCountUp(27, 2000);
-  const reviewReduction = useCountUp(70, 1800);
+  const staffHours = useCountUp(520, 2000);
+  const costAvoidance = useCountUp(147, 2000);
+  const reviewReduction = useCountUp(83, 1800);
   const compliance = useCountUp(91.2, 1600, 1);
 
   return (
@@ -119,9 +134,13 @@ export default function LandingPage() {
         style={{ background: '#0D1B2A' }}
       >
         <div className="hero-glow" aria-hidden="true" suppressHydrationWarning />
-        <div className="hero-particles" aria-hidden="true" suppressHydrationWarning>
-          {Array.from({ length: 20 }).map((_, i) => (
-            <span key={i} className="particle" />
+        <div className="hero-particles" aria-hidden="true">
+          {PARTICLE_POSITIONS.map((pos, i) => (
+            <span
+              key={i}
+              className="particle"
+              style={{ left: `${pos.left}%`, top: `${pos.top}%`, animationDelay: `${PARTICLE_DELAYS[i]}s` }}
+            />
           ))}
         </div>
 
@@ -233,7 +252,7 @@ export default function LandingPage() {
           </p>
           <div className="mt-14 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { ref: staffHours.ref, val: `520–${staffHours.value}`, label: 'Staff Hours Recovered Annually' },
+              { ref: staffHours.ref, val: `${staffHours.value}`, label: 'Staff Hours Recovered Annually' },
               { ref: costAvoidance.ref, val: `$${costAvoidance.value}K`, label: 'Estimated Cost Avoidance/Year' },
               { ref: reviewReduction.ref, val: `${reviewReduction.value}%`, label: 'Manual Review Time Reduced' },
               { ref: compliance.ref, val: `${compliance.value}%`, label: 'Compliance Rate' },
@@ -242,6 +261,7 @@ export default function LandingPage() {
                 <div
                   className="text-4xl font-bold"
                   style={{ fontFamily: 'var(--font-display)', color: '#5CC8DB' }}
+                  suppressHydrationWarning
                 >
                   {s.val}
                 </div>
@@ -276,6 +296,7 @@ export default function LandingPage() {
       <footer
         className="px-6 py-6 text-center text-xs text-white/40"
         style={{ background: '#0D1B2A' }}
+        suppressHydrationWarning
       >
         &copy; {new Date().getFullYear()} ReUse360+ &middot; Pinellas County Utilities
       </footer>
@@ -313,16 +334,6 @@ export default function LandingPage() {
         .particle:nth-child(odd) {
           animation-duration: 16s;
         }
-        ${Array.from({ length: 20 })
-          .map(
-            (_, i) => `
-          .particle:nth-child(${i + 1}) {
-            left: ${Math.random() * 100}%;
-            top: ${Math.random() * 100}%;
-            animation-delay: ${(Math.random() * -12).toFixed(1)}s;
-          }`,
-          )
-          .join('')}
         @keyframes float {
           0%, 100% { transform: translateY(0) scale(1); opacity: 0.3; }
           50% { transform: translateY(-40px) scale(1.5); opacity: 0.6; }

@@ -2,7 +2,7 @@ import { requireEnforcement }  from '@/lib/auth.server';
 import { db }                  from '@/lib/db';
 import { KpiCard }             from '@/components/ui/KpiCard';
 import { ParcelSearch }        from '@/components/enforcement/ParcelSearch';
-import { AlertTriangle, ClipboardCheck, FileCheck, MessageSquare, Droplets, ClipboardList } from 'lucide-react';
+import { AlertTriangle, ClipboardCheck, FileCheck, MessageSquare, Droplets, ClipboardList, Mail } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
@@ -37,6 +37,8 @@ export default async function EnforcementDashboardPage() {
     openComplaints,
     recentViolations,
     patrolLogsToday,
+    totalEmailsSent,
+    emailsToday,
   ] = await Promise.all([
     db.violation.count({ where: { status: { in: ['DETECTED', 'CONFIRMED', 'NOTIFIED'] } } }),
     db.inspection.count({ where: { status: { in: ['SCHEDULED', 'IN_PROGRESS'] } } }),
@@ -49,6 +51,8 @@ export default async function EnforcementDashboardPage() {
       include: { account: { select: { serviceAddress: true, firstName: true, lastName: true } } },
     }),
     db.patrolLog.count({ where: { patrolDate: { gte: todayStart } } }),
+    db.emailLog.count({ where: { status: 'SENT' } }),
+    db.emailLog.count({ where: { sentAt: { gte: todayStart } } }),
   ]);
 
   return (
@@ -65,7 +69,7 @@ export default async function EnforcementDashboardPage() {
       <ParcelSearch />
 
       {/* KPI grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
         <KpiCard
           label="Open Violations"
           value={openViolations}
@@ -100,6 +104,13 @@ export default async function EnforcementDashboardPage() {
           icon={ClipboardList}
           variant={patrolLogsToday > 0 ? 'success' : 'default'}
           sub="Shifts logged today"
+        />
+        <KpiCard
+          label="Emails Sent"
+          value={totalEmailsSent}
+          icon={Mail}
+          variant={emailsToday > 0 ? 'success' : 'default'}
+          sub={`${emailsToday} sent today`}
         />
       </div>
 

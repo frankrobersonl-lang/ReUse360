@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import {
   ArrowLeft, DollarSign, Clock, FileText, CalendarDays,
   AlertTriangle, MapPin, Hash, User, Droplets, Scale,
+  Mail, Send, CheckCircle, XCircle,
 } from 'lucide-react';
 
 /* ── Types ─────────────────────────────────── */
@@ -39,6 +40,7 @@ interface ViolationDetail {
     meterId: string;
   };
   inspections: { id: string; status: string; address: string; createdAt: string; findings: string | null }[];
+  emailLogs: { id: string; emailType: string; recipient: string; subject: string; status: string; sentAt: string; sentBy: string | null }[];
   timeline: { date: string; event: string; detail: string }[];
   priorCount: number;
   offenseNumber: number;
@@ -73,6 +75,9 @@ const TIMELINE_DOT_STYLES: Record<string, string> = {
   'Service Request Created': 'bg-purple-500',
   'Violation Resolved':  'bg-green-500',
   'Officer Note':        'bg-slate-400',
+  'Email: Violation Notice':      'bg-indigo-500',
+  'Email: Correction Confirmed':  'bg-green-500',
+  'Email: Proactive Warning':     'bg-blue-500',
 };
 
 /* ── Component ──────────────────────────────── */
@@ -85,6 +90,8 @@ export default function ViolationCaseDetailPage() {
   const [busy, setBusy] = useState(false);
   const [noteText, setNoteText] = useState('');
   const [showNoteForm, setShowNoteForm] = useState(false);
+  const [showEmailMenu, setShowEmailMenu] = useState(false);
+  const [emailSending, setEmailSending] = useState(false);
 
   useEffect(() => {
     fetch(`/api/violations/${id}`)
@@ -168,6 +175,28 @@ export default function ViolationCaseDetailPage() {
       toast.error(e.message ?? 'Failed to add note');
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function sendViolationEmail(emailType: string) {
+    setEmailSending(true);
+    setShowEmailMenu(false);
+    try {
+      const res = await fetch('/api/notifications/send-violation-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ violationId: id, emailType }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      toast.success(`Email sent to ${data.recipient}`);
+      // Refetch to update timeline and email logs
+      const updated = await fetch(`/api/violations/${id}`);
+      if (updated.ok) setV(await updated.json());
+    } catch (e: any) {
+      toast.error(e.message ?? 'Failed to send email');
+    } finally {
+      setEmailSending(false);
     }
   }
 
@@ -340,6 +369,42 @@ export default function ViolationCaseDetailPage() {
         </div>
       </div>
 
+      {/* Email History */}
+      {v.emailLogs && v.emailLogs.length > 0 && (
+        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+          <div className="px-5 py-3.5 border-b border-slate-100 bg-slate-50/50 flex items-center gap-2">
+            <Mail className="w-4 h-4 text-slate-400" />
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Email History</p>
+            <span className="ml-auto text-xs text-slate-400">{v.emailLogs.length} sent</span>
+          </div>
+          <div className="divide-y divide-slate-50">
+            {v.emailLogs.map((log) => (
+              <div key={log.id} className="flex items-center gap-4 px-5 py-3">
+                {log.status === 'SENT' ? (
+                  <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
+                ) : (
+                  <XCircle className="w-4 h-4 text-red-500 shrink-0" />
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-slate-900 truncate">{log.subject}</p>
+                  <p className="text-xs text-slate-500">
+                    {log.emailType.replace(/_/g, ' ')} → {log.recipient}
+                  </p>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="text-xs text-slate-500">
+                    {new Date(log.sentAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  </p>
+                  <p className="text-xs text-slate-400">
+                    {new Date(log.sentAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Action Buttons */}
       {!isTerminal && (
         <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
@@ -380,6 +445,41 @@ export default function ViolationCaseDetailPage() {
               <FileText className="w-4 h-4" />
               Issue Citation
             </button>
+            <div className="relative">
+              <button
+                onClick={() => setShowEmailMenu(!showEmailMenu)}
+                disabled={emailSending}
+                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
+              >
+                <Mail className="w-4 h-4" />
+                {emailSending ? 'Sending…' : 'Send Email'}
+              </button>
+              {showEmailMenu && (
+                <div className="absolute top-full mt-1 left-0 z-20 bg-white border border-slate-200 rounded-lg shadow-lg py-1 w-56">
+                  <button
+                    onClick={() => sendViolationEmail('VIOLATION_NOTICE')}
+                    className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+                  >
+                    <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
+                    Violation Notice
+                  </button>
+                  <button
+                    onClick={() => sendViolationEmail('CORRECTION_CONFIRMED')}
+                    className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+                  >
+                    <CheckCircle className="w-3.5 h-3.5 text-green-500" />
+                    Correction Confirmed
+                  </button>
+                  <button
+                    onClick={() => sendViolationEmail('PROACTIVE_WARNING')}
+                    className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+                  >
+                    <Send className="w-3.5 h-3.5 text-blue-500" />
+                    Proactive Warning
+                  </button>
+                </div>
+              )}
+            </div>
             <button
               onClick={() => setShowNoteForm(!showNoteForm)}
               className="px-4 py-2 bg-white border border-slate-200 hover:border-slate-300 text-sm font-medium text-slate-700 rounded-lg transition-colors"

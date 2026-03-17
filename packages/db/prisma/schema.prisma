@@ -199,6 +199,7 @@ model CustomerAccount {
   violations Violation[]
   alerts     Alert[]
   incentives ReclaimedIncentive[]
+  emailLogs  EmailLog[]
 
   @@index([meterId])
   @@index([parcelId])
@@ -252,6 +253,7 @@ model Violation {
   inspections Inspection[]
   complaints  Complaint[]
   alerts      Alert[]
+  emailLogs   EmailLog[]
 
   @@index([parcelId])
   @@index([accountId])
@@ -564,4 +566,36 @@ model Notification {
   @@index([userId, read])
   @@index([createdAt])
   @@map("notifications")
+}
+
+// ── Compliance Email Logs ───────────────────
+
+enum EmailType {
+  VIOLATION_NOTICE
+  CORRECTION_CONFIRMED
+  PROACTIVE_WARNING
+}
+
+model EmailLog {
+  id          String    @id @default(uuid())
+  violationId String?
+  accountId   String
+  emailType   EmailType
+  recipient   String    // masked email for audit
+  subject     String
+  resendId    String?   // Resend message ID
+  status      String    @default("SENT") // SENT, FAILED, BOUNCED
+  errorMsg    String?
+  sentBy      String?   // clerk userId of officer who triggered
+  sentAt      DateTime  @default(now())
+  createdAt   DateTime  @default(now())
+
+  violation Violation?      @relation(fields: [violationId], references: [id])
+  account   CustomerAccount @relation(fields: [accountId], references: [accountId])
+
+  @@index([violationId])
+  @@index([accountId])
+  @@index([sentAt])
+  @@index([emailType])
+  @@map("email_logs")
 }

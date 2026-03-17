@@ -18,6 +18,7 @@ export async function GET(
       inspections: { orderBy: { createdAt: 'desc' }, take: 20 },
       complaints: { orderBy: { createdAt: 'desc' }, take: 10 },
       alerts: { orderBy: { createdAt: 'desc' }, take: 10 },
+      emailLogs: { orderBy: { sentAt: 'desc' }, take: 20 },
     },
   });
 
@@ -72,6 +73,15 @@ export async function GET(
       date: alert.createdAt.toISOString(),
       event: `Alert: ${alert.severity}`,
       detail: alert.subject,
+    });
+  }
+
+  for (const emailLog of violation.emailLogs) {
+    const typeLabel = emailLog.emailType.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    timeline.push({
+      date: emailLog.sentAt.toISOString(),
+      event: `Email: ${typeLabel}`,
+      detail: `${emailLog.status === 'SENT' ? '✓' : '✗'} ${emailLog.subject} → ${emailLog.recipient}`,
     });
   }
 

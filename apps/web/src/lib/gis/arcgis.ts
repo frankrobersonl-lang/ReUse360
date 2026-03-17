@@ -147,7 +147,7 @@ export async function lookupParcel(params: {
     where = `PARCELID = '${params.parcelId.replace(/'/g, "''")}'`;
   } else if (params.address) {
     const escaped = params.address.replace(/'/g, "''");
-    where = `SITEADDR LIKE '%${escaped}%'`;
+    where = `UPPER(SITE_ADDRESS) LIKE '%${escaped.toUpperCase()}%'`;
   } else if (params.lat != null && params.lon != null) {
     geometry = JSON.stringify({ x: params.lon, y: params.lat, spatialReference: { wkid: 4326 } });
     geometryType = 'esriGeometryPoint';
@@ -220,7 +220,7 @@ export async function queryArcGISViolations(params: {
 export async function searchParcels(address: string, limit = 10): Promise<ArcGISFeature[]> {
   const escaped = address.replace(/'/g, "''");
   const result = await queryFeatureService(ARCGIS_SERVICES.parcels, {
-    where: `SITEADDR LIKE '%${escaped}%'`,
+    where: `UPPER(SITE_ADDRESS) LIKE '%${escaped.toUpperCase()}%'`,
     returnGeometry: true,
     resultRecordCount: limit,
   });

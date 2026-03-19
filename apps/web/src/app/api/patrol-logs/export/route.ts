@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 
 export async function GET(req: NextRequest) {
   const guard = await guardApi("reports:export");
+  if (!guard.ok) return guard.response;
 
   const url = req.nextUrl.searchParams;
   const startDate = url.get("startDate");
@@ -25,7 +26,7 @@ export async function GET(req: NextRequest) {
     take: 5000,
   });
 
-  const header = [
+  const headers = [
     "Patrol Date",
     "Officer Name(s)",
     "Vehicle ID",
@@ -48,11 +49,11 @@ export async function GET(req: NextRequest) {
   const rows = logs.map((log) => {
     const date = new Date(log.patrolDate).toLocaleDateString("en-US");
     const officers = log.officerNames.join("; ");
-    const notes = (log.notes ?? "").replace(/"/g, """" );
+    const notes = (log.notes ?? "").replace(/"/g, '""');
     const miles = log.totalMiles ?? log.mileage ?? 0;
-    return [
+    const cols = [
       date,
-      `"${officers}"`,
+      '"' + officers + '"',
       log.vehicleId ?? "",
       log.shiftStart ?? "",
       log.shiftEnd ?? "",
@@ -67,19 +68,19 @@ export async function GET(req: NextRequest) {
       log.pamphletCount ?? 0,
       log.residencesContacted ?? 0,
       log.waterSource ?? "",
-      `"${notes}"`,
-    ].join(",");
+      '"' + notes + '"',
+    ];
+    return cols.join(",");
   });
 
-  const csv = [header, ...rows].join("
-");
-  const filename = `SWFWMD-patrol-logs-${startDate ?? "all"}-to-${endDate ?? "all"}.csv`;
+  const csv = [headers, ...rows].join("\n");
+  const filename = "SWFWMD-patrol-logs-" + (startDate ?? "all") + "-to-" + (endDate ?? "all") + ".csv";
 
   return new NextResponse(csv, {
     status: 200,
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="${filename}"`,
+      "Content-Disposition": "attachment; filename=\"" + filename + "\"",
     },
   });
 }

@@ -19,6 +19,7 @@ export class SrSyncService {
     return this.prisma.connectorJob.create({
       data: {
         jobType: data.action === 'create' ? 'CITYWORKS_SR_CREATE' : 'CITYWORKS_SR_SYNC',
+        orgId: data.orgId ?? 'org-pcu',
         status:  'QUEUED',
         payload: JSON.stringify(data),
       },

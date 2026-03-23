@@ -48,6 +48,7 @@ export class ViolationDetectionService {
     return this.prisma.connectorJob.create({
       data: {
         jobType: 'VIOLATION_DETECTION',
+          orgId: job.data.orgId ?? 'org-pcu',
         status:  'QUEUED',
         payload: JSON.stringify(data),
       },

@@ -1,7 +1,4 @@
-// ─────────────────────────────────────────────
-// ReUse360 Plus — Prisma Schema
-// PostgreSQL (Render Postgres or Fly.io)
-// ─────────────────────────────────────────────
+// ReUse360 Plus - Prisma Schema - Multi-tenant Sprint 6
 
 generator client {
   provider        = "prisma-client-js"
@@ -11,16 +8,21 @@ generator client {
 datasource db {
   provider   = "postgresql"
   url        = env("DATABASE_URL")
-  directUrl  = env("DIRECT_URL")   // for Supabase/PgBouncer if used later
+  directUrl  = env("DIRECT_URL")
   extensions = [vector]
 }
-
-// ── Enums ────────────────────────────────────
 
 enum UserRole {
   ADMIN
   ANALYST
   ENFORCEMENT
+}
+
+enum OrgPlan {
+  TRIAL
+  ESSENTIAL
+  PROFESSIONAL
+  ENTERPRISE
 }
 
 enum ViolationType {
@@ -94,20 +96,6 @@ enum AlertSeverity {
   CRITICAL
 }
 
-enum IncentiveType {
-  CONVERSION_REBATE
-  USAGE_MILESTONE
-  COMPLIANCE_STREAK
-  OUTREACH_PARTICIPATION
-}
-
-enum IncentiveStatus {
-  PENDING
-  APPROVED
-  PAID
-  DENIED
-}
-
 enum JobType {
   BEACON_RANGE_READ
   BEACON_FLOW_EXPORT
@@ -132,55 +120,134 @@ enum JobStatus {
   RETRYING
 }
 
-// ── Models ───────────────────────────────────
+enum NotificationType {
+  VIOLATION_ALERT
+  INSPECTION_DUE
+  COMPLIANCE_WARNING
+  SYSTEM
+  PATROL_REMINDER
+}
+
+enum EmailType {
+  VIOLATION_NOTICE
+  CORRECTION_CONFIRMED
+  PROACTIVE_WARNING
+}
+
+enum IncentiveType {
+  REBATE
+  CREDIT
+  DISCOUNT
+  VOUCHER
+}
+
+enum IncentiveStatus {
+  PENDING
+  APPROVED
+  PAID
+  DENIED
+}
+
+model Organization {
+  id           String    @id @default(cuid())
+  name         String
+  slug         String    @unique
+  clerkOrgId   String?   @unique
+  plan         OrgPlan   @default(TRIAL)
+  trialEndsAt  DateTime?
+  isActive     Boolean   @default(true)
+  amiApiUrl    String?
+  amiApiKey    String?
+  gisParcelUrl    String?
+  gisViolationUrl String?
+  cityworksUrl    String?
+  cityworksUser   String?
+  sapSystemId     String?
+  logoUrl         String?
+  primaryColor    String?  @default("#0B6E8C")
+  utilityName     String?
+  stripeCustomerId     String?  @unique
+  stripeSubscriptionId String?  @unique
+  seatCount    Int      @default(5)
+  accountCount Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  users                 User[]
+  parcels               Parcel[]
+  customerAccounts      CustomerAccount[]
+  violations            Violation[]
+  inspections           Inspection[]
+  permits               Permit[]
+  complaints            Complaint[]
+  alerts                Alert[]
+  patrolLogs            PatrolLog[]
+  wateringZones         WateringZone[]
+  parcelZoneAssignments ParcelZoneAssignment[]
+  reclaimedIncentives   ReclaimedIncentive[]
+  chatSessions          ChatSession[]
+  notifications         Notification[]
+  connectorJobs         ConnectorJob[]
+
+  @@index([slug])
+  @@index([plan])
+  @@map("organizations")
+}
 
 model User {
-  id          String    @id @default(uuid())
-  clerkId     String    @unique
-  email       String    @unique
-  firstName   String?
-  lastName    String?
-  role        UserRole  @default(ANALYST)
-  isActive    Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id        String   @id @default(uuid())
+  clerkId   String   @unique
+  email     String   @unique
+  firstName String?
+  lastName  String?
+  role      UserRole @default(ANALYST)
+  isActive  Boolean  @default(true)
+  orgId     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
+  org         Organization @relation(fields: [orgId], references: [id])
   inspections Inspection[] @relation("AssignedInspections")
   permits     Permit[]     @relation("IssuedPermits")
 
   @@index([clerkId])
   @@index([email])
+  @@index([orgId])
   @@map("users")
 }
 
 model Parcel {
-  id                  String    @id @default(uuid())
-  parcelId            String    @unique  // PARCELID from Pinellas eGIS
+  id                  String   @id @default(uuid())
+  parcelId            String
   siteAddress         String
   city                String
   zip                 String
   useCode             String?
   landUseCode         String?
-  isHomestead         Boolean   @default(false)
-  lat                 Decimal?  @db.Decimal(10, 7)
-  lon                 Decimal?  @db.Decimal(10, 7)
+  isHomestead         Boolean  @default(false)
+  lat                 Decimal? @db.Decimal(10, 7)
+  lon                 Decimal? @db.Decimal(10, 7)
   wateringZone        String?
-  irrigationDay       String?   // ODD | EVEN | MON | TUE | etc.
-  isReclaimedEligible Boolean   @default(false)
-  lastSyncedAt        DateTime  @default(now())
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
+  irrigationDay       String?
+  isReclaimedEligible Boolean  @default(false)
+  lastSyncedAt        DateTime @default(now())
+  orgId               String
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 
+  org              Organization      @relation(fields: [orgId], references: [id])
   customerAccounts CustomerAccount[]
 
+  @@unique([parcelId, orgId])
   @@index([city])
   @@index([wateringZone])
+  @@index([orgId])
   @@map("parcels")
 }
 
 model CustomerAccount {
   id             String   @id @default(uuid())
-  accountId      String   @unique  // SAP billing account ID
+  accountId      String
   meterId        String
   parcelId       String
   firstName      String
@@ -188,21 +255,23 @@ model CustomerAccount {
   email          String?
   phone          String?
   serviceAddress String
-  isReclaimed              Boolean  @default(false)
-  reclaimedGallonsBaseline Decimal? @db.Decimal(12, 2)
-  reclaimedGallonsCurrent  Decimal? @db.Decimal(12, 2)
-  isActive                 Boolean  @default(true)
-  createdAt                DateTime @default(now())
-  updatedAt                DateTime @updatedAt
+  isReclaimed    Boolean  @default(false)
+  isActive       Boolean  @default(true)
+  orgId          String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-  parcel     Parcel              @relation(fields: [parcelId], references: [parcelId])
+  org        Organization         @relation(fields: [orgId], references: [id])
+  parcel     Parcel               @relation(fields: [parcelId, orgId], references: [parcelId, orgId])
   violations Violation[]
   alerts     Alert[]
   incentives ReclaimedIncentive[]
   emailLogs  EmailLog[]
 
+  @@unique([accountId, orgId])
   @@index([meterId])
   @@index([parcelId])
+  @@index([orgId])
   @@map("customer_accounts")
 }
 
@@ -215,9 +284,9 @@ model MeterRead {
   flow              Decimal?  @db.Decimal(12, 4)
   flowUnit          String?   @default("gallons")
   flowTime          DateTime?
-  label             String?   // potable | reclaimed
+  label             String?
   servicePointCycle String?
-  resolution        String?   // 15min | hourly | daily
+  resolution        String?
   rawPayload        String?   @db.Text
   createdAt         DateTime  @default(now())
 
@@ -226,30 +295,31 @@ model MeterRead {
   @@index([readTime])
   @@map("meter_reads")
 }
-
 model Violation {
-  id               String          @id @default(uuid())
-  caseNumber       String?         @unique // PCU-YYYY-XXXX, auto-generated on create
-  parcelId         String
-  accountId        String
-  meterId          String
-  violationType    ViolationType
-  status           ViolationStatus @default(DETECTED)
-  detectedAt       DateTime
-  confirmedAt      DateTime?
-  resolvedAt       DateTime?
-  readValue        Decimal         @db.Decimal(12, 4)
-  flowUnit         String?         @default("gallons")
-  wateringDay      String?
-  wateringZone     String?
-  ordinanceRef     String?         // FAC 40D-22
-  cityworksSrId    String?
-  notes            String?         @db.Text
-  detectedByJobId  String?
-  createdAt        DateTime        @default(now())
-  updatedAt        DateTime        @updatedAt
+  id              String          @id @default(uuid())
+  caseNumber      String?         @unique
+  parcelId        String
+  accountId       String
+  meterId         String
+  violationType   ViolationType
+  status          ViolationStatus @default(DETECTED)
+  detectedAt      DateTime
+  confirmedAt     DateTime?
+  resolvedAt      DateTime?
+  readValue       Decimal         @db.Decimal(12, 4)
+  flowUnit        String?         @default("gallons")
+  wateringDay     String?
+  wateringZone    String?
+  ordinanceRef    String?
+  cityworksSrId   String?
+  notes           String?         @db.Text
+  detectedByJobId String?
+  orgId           String
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
 
-  account     CustomerAccount @relation(fields: [accountId], references: [accountId])
+  org         Organization    @relation(fields: [orgId], references: [id])
+  account     CustomerAccount @relation(fields: [accountId, orgId], references: [accountId, orgId])
   inspections Inspection[]
   complaints  Complaint[]
   alerts      Alert[]
@@ -260,11 +330,12 @@ model Violation {
   @@index([status])
   @@index([detectedAt])
   @@index([violationType])
+  @@index([orgId])
   @@map("violations")
 }
 
 model Inspection {
-  id            String          @id @default(uuid())
+  id            String           @id @default(uuid())
   violationId   String?
   parcelId      String
   accountId     String
@@ -276,17 +347,20 @@ model Inspection {
   findings      String?          @db.Text
   photoUrls     String[]
   cityworksWoId String?
+  orgId         String
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
 
-  violation  Violation? @relation(fields: [violationId], references: [id])
-  assignedUser User?    @relation("AssignedInspections", fields: [assignedTo], references: [id])
-  complaints Complaint[]
+  org          Organization @relation(fields: [orgId], references: [id])
+  violation    Violation?   @relation(fields: [violationId], references: [id])
+  assignedUser User?        @relation("AssignedInspections", fields: [assignedTo], references: [id])
+  complaints   Complaint[]
 
   @@index([violationId])
   @@index([parcelId])
   @@index([status])
   @@index([assignedTo])
+  @@index([orgId])
   @@map("inspections")
 }
 
@@ -302,40 +376,46 @@ model Permit {
   issuedBy       String?
   conditions     String?      @db.Text
   attachmentUrls String[]
+  orgId          String
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
-  issuedByUser User? @relation("IssuedPermits", fields: [issuedBy], references: [id])
+  org          Organization @relation(fields: [orgId], references: [id])
+  issuedByUser User?        @relation("IssuedPermits", fields: [issuedBy], references: [id])
 
   @@index([parcelId])
   @@index([accountId])
   @@index([status])
   @@index([expiresAt])
+  @@index([orgId])
   @@map("permits")
 }
 
 model Complaint {
-  id                  String          @id @default(uuid())
-  reportedParcelId    String?
-  reporterAccountId   String?
-  address             String
-  source              ComplaintSource
-  status              ComplaintStatus @default(OPEN)
-  description         String          @db.Text
-  violationId         String?
-  inspectionId        String?
-  cityworksSrId       String?
-  resolvedAt          DateTime?
-  resolution          String?         @db.Text
-  createdAt           DateTime        @default(now())
-  updatedAt           DateTime        @updatedAt
+  id                String          @id @default(uuid())
+  reportedParcelId  String?
+  reporterAccountId String?
+  address           String
+  source            ComplaintSource
+  status            ComplaintStatus @default(OPEN)
+  description       String          @db.Text
+  violationId       String?
+  inspectionId      String?
+  cityworksSrId     String?
+  resolvedAt        DateTime?
+  resolution        String?         @db.Text
+  orgId             String
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
 
-  violation  Violation?  @relation(fields: [violationId], references: [id])
-  inspection Inspection? @relation(fields: [inspectionId], references: [id])
+  org        Organization @relation(fields: [orgId], references: [id])
+  violation  Violation?   @relation(fields: [violationId], references: [id])
+  inspection Inspection?  @relation(fields: [inspectionId], references: [id])
 
   @@index([reportedParcelId])
   @@index([status])
   @@index([violationId])
+  @@index([orgId])
   @@map("complaints")
 }
 
@@ -344,21 +424,23 @@ model Alert {
   accountId   String
   parcelId    String?
   violationId String?
-  leakAlertId String?
   severity    AlertSeverity @default(INFO)
   channel     AlertChannel
   subject     String
   body        String        @db.Text
   sentAt      DateTime?
   readAt      DateTime?
+  orgId       String
   createdAt   DateTime      @default(now())
 
-  account   CustomerAccount @relation(fields: [accountId], references: [accountId])
+  org       Organization    @relation(fields: [orgId], references: [id])
+  account   CustomerAccount @relation(fields: [accountId, orgId], references: [accountId, orgId])
   violation Violation?      @relation(fields: [violationId], references: [id])
 
   @@index([accountId])
   @@index([violationId])
   @@index([sentAt])
+  @@index([orgId])
   @@map("alerts")
 }
 
@@ -382,62 +464,74 @@ model LeakAlert {
 }
 
 model ConnectorJob {
-  id               String    @id @default(uuid())
-  jobType          JobType
-  status           JobStatus @default(QUEUED)
-  payload          String?   @db.Text  // JSON
-  result           String?   @db.Text  // JSON
-  errorMessage     String?   @db.Text
-  attemptCount     Int       @default(0)
-  maxAttempts      Int       @default(3)
-  beaconJobUuid    String?
-  beaconStatusUrl  String?
-  scheduledAt      DateTime  @default(now())
-  startedAt        DateTime?
-  completedAt      DateTime?
-  createdAt        DateTime  @default(now())
+  id              String    @id @default(uuid())
+  jobType         JobType
+  status          JobStatus @default(QUEUED)
+  payload         String?   @db.Text
+  result          String?   @db.Text
+  errorMessage    String?   @db.Text
+  attemptCount    Int       @default(0)
+  maxAttempts     Int       @default(3)
+  beaconJobUuid   String?
+  beaconStatusUrl String?
+  scheduledAt     DateTime  @default(now())
+  startedAt       DateTime?
+  completedAt     DateTime?
+  orgId           String
+  createdAt       DateTime  @default(now())
+
+  org Organization @relation(fields: [orgId], references: [id])
 
   @@index([status])
   @@index([jobType])
   @@index([scheduledAt])
+  @@index([orgId])
   @@map("connector_jobs")
 }
 
 model WateringZone {
-  id               String    @id @default(uuid())
-  zoneCode         String    @unique  // ODD | EVEN | MON | etc.
+  id               String   @id @default(uuid())
+  zoneCode         String
   description      String
   allowedDays      String[]
-  allowedStartTime String?   // "00:00"
-  allowedEndTime   String?   // "08:00"
+  allowedStartTime String?
+  allowedEndTime   String?
   ordinanceRef     String?
-  isActive         Boolean   @default(true)
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  isActive         Boolean  @default(true)
+  orgId            String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
+  org Organization @relation(fields: [orgId], references: [id])
+
+  @@unique([zoneCode, orgId])
+  @@index([orgId])
   @@map("watering_zones")
 }
 
 model ParcelZoneAssignment {
-  id            String    @id @default(uuid())
-  parcelId      String    // Pinellas eGIS PARCELID
-  zoneId        String    // References WateringZone.zoneCode
+  id            String   @id @default(uuid())
+  parcelId      String
+  zoneId        String
   zoneName      String?
-  dayOfWeek     String?   // MON, TUE, WED, etc.
-  oddEven       String?   // ODD | EVEN
-  effectiveDate DateTime  @default(now())
-  geojson       String?   @db.Text
-  source        String?   // "CSV" | "ArcGIS" | "manual"
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  dayOfWeek     String?
+  oddEven       String?
+  effectiveDate DateTime @default(now())
+  geojson       String?  @db.Text
+  source        String?
+  orgId         String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  @@unique([parcelId, zoneId])
+  org Organization @relation(fields: [orgId], references: [id])
+
+  @@unique([parcelId, zoneId, orgId])
   @@index([parcelId])
   @@index([zoneId])
   @@index([effectiveDate])
+  @@index([orgId])
   @@map("parcel_zone_assignments")
 }
-
 model ReclaimedIncentive {
   id           String          @id @default(uuid())
   accountId    String
@@ -451,53 +545,60 @@ model ReclaimedIncentive {
   deniedAt     DateTime?
   deniedReason String?         @db.Text
   approvedBy   String?
+  orgId        String
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
 
-  account CustomerAccount @relation(fields: [accountId], references: [accountId])
+  org     Organization    @relation(fields: [orgId], references: [id])
+  account CustomerAccount @relation(fields: [accountId, orgId], references: [accountId, orgId])
 
   @@index([accountId])
   @@index([status])
   @@index([type])
   @@index([appliedAt])
+  @@index([orgId])
   @@map("reclaimed_incentives")
 }
 
 model PatrolLog {
-  id                   String   @id @default(cuid())
-  officerNames         String[]
-  patrolDate           DateTime
-  mileage              Float    @default(0)
-  startOdometer        Float?
-  endOdometer          Float?
-  totalMiles           Float?
-  vehicleId            String?
-  numberOfViolations   Int      @default(0)
-  citationsIssued      Int      @default(0)
-  warningsIssued       Int      @default(0)
-  violationOccurred    Boolean  @default(false)
-  outreachConducted    Boolean  @default(false)
-  outreachType         String?
-  pamphletCount        Int      @default(0)
-  residencesContacted  Int      @default(0)
-  waterSource          String?
-  notes                String?  @db.Text
-  shiftStart           String?
-  shiftEnd             String?
-  submittedById        String?
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  id                  String   @id @default(cuid())
+  officerNames        String[]
+  patrolDate          DateTime
+  mileage             Float    @default(0)
+  startOdometer       Float?
+  endOdometer         Float?
+  totalMiles          Float?
+  vehicleId           String?
+  numberOfViolations  Int      @default(0)
+  citationsIssued     Int      @default(0)
+  warningsIssued      Int      @default(0)
+  violationOccurred   Boolean  @default(false)
+  outreachConducted   Boolean  @default(false)
+  outreachType        String?
+  pamphletCount       Int      @default(0)
+  residencesContacted Int      @default(0)
+  waterSource         String?
+  notes               String?  @db.Text
+  shiftStart          String?
+  shiftEnd            String?
+  submittedById       String?
+  orgId               String
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 
-  @@map("patrol_logs")
+  org Organization @relation(fields: [orgId], references: [id])
+
   @@index([patrolDate])
   @@index([submittedById])
+  @@index([orgId])
+  @@map("patrol_logs")
 }
 
 model ParcelLookup {
   id         String   @id @default(cuid())
   officerId  String
   query      String
-  resultData String   @db.Text // JSON
+  resultData String   @db.Text
   createdAt  DateTime @default(now())
 
   @@index([officerId])
@@ -509,20 +610,23 @@ model ChatSession {
   id        String   @id @default(cuid())
   userId    String?
   userEmail String?
+  orgId     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   messages ChatMessage[]
+  org      Organization? @relation(fields: [orgId], references: [id])
 
   @@index([userId])
   @@index([createdAt])
+  @@index([orgId])
   @@map("chat_sessions")
 }
 
 model ChatMessage {
   id        String   @id @default(cuid())
   sessionId String
-  role      String   // "user" | "assistant"
+  role      String
   content   String   @db.Text
   createdAt DateTime @default(now())
 
@@ -533,29 +637,18 @@ model ChatMessage {
   @@map("chat_messages")
 }
 
-// RAG document store — embedding vector column added via raw SQL (vector(1536))
 model RagDocument {
   id         String   @id @default(cuid())
   title      String
   content    String   @db.Text
-  sourceType String   // "violation_record" | "ordinance" | "policy" | "faq"
-  sourceId   String?  // optional link to source record
+  sourceType String
+  sourceId   String?
   chunkIndex Int      @default(0)
   createdAt  DateTime @default(now())
 
   @@index([sourceType])
   @@index([createdAt])
   @@map("rag_documents")
-}
-
-// ── Notifications ────────────────────────────
-
-enum NotificationType {
-  VIOLATION_ALERT
-  INSPECTION_DUE
-  COMPLIANCE_WARNING
-  SYSTEM
-  PATROL_REMINDER
 }
 
 model Notification {
@@ -566,21 +659,17 @@ model Notification {
   type      NotificationType
   read      Boolean          @default(false)
   link      String?
+  orgId     String
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
+
+  org Organization @relation(fields: [orgId], references: [id])
 
   @@index([userId])
   @@index([userId, read])
   @@index([createdAt])
+  @@index([orgId])
   @@map("notifications")
-}
-
-// ── Compliance Email Logs ───────────────────
-
-enum EmailType {
-  VIOLATION_NOTICE
-  CORRECTION_CONFIRMED
-  PROACTIVE_WARNING
 }
 
 model EmailLog {
@@ -588,17 +677,18 @@ model EmailLog {
   violationId String?
   accountId   String
   emailType   EmailType
-  recipient   String    // masked email for audit
+  recipient   String
   subject     String
-  resendId    String?   // Resend message ID
-  status      String    @default("SENT") // SENT, FAILED, BOUNCED
+  resendId    String?
+  status      String    @default("SENT")
   errorMsg    String?
-  sentBy      String?   // clerk userId of officer who triggered
+  sentBy      String?
+  orgId       String
   sentAt      DateTime  @default(now())
   createdAt   DateTime  @default(now())
 
   violation Violation?      @relation(fields: [violationId], references: [id])
-  account   CustomerAccount @relation(fields: [accountId], references: [accountId])
+  account   CustomerAccount @relation(fields: [accountId, orgId], references: [accountId, orgId])
 
   @@index([violationId])
   @@index([accountId])

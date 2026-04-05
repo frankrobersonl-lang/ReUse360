@@ -46,6 +46,7 @@ export async function POST(req: Request) {
           lastName:  data.last_name  ?? null,
           role:      'ENFORCEMENT',
           isActive:  true,
+          orgId:     'org-pcu',
         },
         update: {
           email:     data.email_addresses[0]?.email_address ?? '',
@@ -66,6 +67,7 @@ export async function POST(req: Request) {
           lastName:  data.last_name  ?? null,
           role:      (role as any) ?? 'ENFORCEMENT',
           isActive:  true,
+          orgId:     'org-pcu',
         },
         update: {
           email:     data.email_addresses[0]?.email_address ?? '',

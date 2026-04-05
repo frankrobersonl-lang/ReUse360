@@ -21,14 +21,14 @@ export async function GET(req: NextRequest) {
   }
 
   const assignment = await db.parcelZoneAssignment.findFirst({
-    where: { parcelId },
+    where: { parcelId, orgId: 'org-pcu' },
     orderBy: { effectiveDate: 'desc' },
   });
 
   if (!assignment) {
     // Fall back to the Parcel record's wateringZone/irrigationDay
     const parcel = await db.parcel.findUnique({
-      where: { parcelId },
+      where: { parcelId_orgId: { parcelId, orgId: 'org-pcu' } },
       select: { parcelId: true, wateringZone: true, irrigationDay: true },
     });
 
@@ -50,7 +50,7 @@ export async function GET(req: NextRequest) {
   }
 
   const zone = assignment.zoneId
-    ? await db.wateringZone.findUnique({ where: { zoneCode: assignment.zoneId } })
+    ? await db.wateringZone.findUnique({ where: { zoneCode_orgId: { zoneCode: assignment.zoneId, orgId: 'org-pcu' } } })
     : null;
 
   return NextResponse.json({

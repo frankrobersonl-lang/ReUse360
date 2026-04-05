@@ -72,6 +72,7 @@ export async function POST(req: NextRequest) {
 
   const log = await db.patrolLog.create({
     data: {
+      orgId: 'org-pcu',
       officerNames: body.officerNames ?? [],
       patrolDate: new Date(body.patrolDate),
       mileage: totalMiles,

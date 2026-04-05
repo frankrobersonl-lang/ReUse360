@@ -26,7 +26,7 @@ export default async function CustomerDetailPage({ params }: Props) {
   const { id } = await params;
 
   const customer = await db.customerAccount.findUnique({
-    where: { accountId: id },
+    where: { accountId_orgId: { accountId: id, orgId: 'org-pcu' } },
     include: {
       parcel: true,
       violations: { orderBy: { detectedAt: 'desc' }, take: 5 },

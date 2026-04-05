@@ -146,8 +146,6 @@ async function reclaimedAdoption(start: Date, end: Date) {
           accountId: true,
           firstName: true,
           lastName: true,
-          reclaimedGallonsBaseline: true,
-          reclaimedGallonsCurrent: true,
           createdAt: true,
         },
       }),

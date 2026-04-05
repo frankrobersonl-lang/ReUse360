@@ -167,7 +167,7 @@ function parseAddress(normalized: string): {
 async function searchLocalDB(raw: string, normalized: string): Promise<ParcelResult[]> {
   // Try exact parcel ID match first
   const parcel = await db.parcel.findUnique({
-    where: { parcelId: raw },
+    where: { parcelId_orgId: { parcelId: raw, orgId: 'org-pcu' } },
     include: {
       customerAccounts: {
         where: { isActive: true },

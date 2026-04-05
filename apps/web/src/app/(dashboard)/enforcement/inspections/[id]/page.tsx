@@ -42,7 +42,7 @@ export default async function InspectionDetailPage({ params }: Props) {
 
   // Fetch all violations linked to this parcel for the violations table
   const linkedViolations = await db.violation.findMany({
-    where: { parcelId: inspection.parcelId },
+    where: { parcelId: inspection.parcelId, orgId: 'org-pcu' },
     orderBy: { detectedAt: 'desc' },
     take: 10,
   });

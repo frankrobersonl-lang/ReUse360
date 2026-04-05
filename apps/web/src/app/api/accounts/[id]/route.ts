@@ -27,7 +27,7 @@ export async function GET(
 
   // Inspections linked by accountId
   const inspections = await db.inspection.findMany({
-    where: { accountId: account.accountId },
+    where: { accountId: account.accountId, orgId: 'org-pcu' },
     orderBy: { createdAt: 'desc' },
     take: 50,
   });

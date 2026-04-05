@@ -176,6 +176,7 @@ export async function POST(req: NextRequest) {
       data: {
         violationId: violation.id,
         accountId: account.accountId,
+        orgId: 'org-pcu',
         emailType: emailType as EmailType,
         recipient: maskEmail(recipientEmail),
         subject: emailContent.subject,

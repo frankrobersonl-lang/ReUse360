@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const account = await db.customerAccount.findUnique({ where: { accountId } });
+  const account = await db.customerAccount.findUnique({ where: { accountId_orgId: { accountId, orgId: 'org-pcu' } } });
   if (!account) {
     return Response.json({ error: 'Account not found' }, { status: 404 });
   }
@@ -52,6 +52,7 @@ export async function POST(req: NextRequest) {
   const incentive = await db.reclaimedIncentive.create({
     data: {
       accountId,
+      orgId: 'org-pcu',
       type,
       amount,
       description: description ?? null,

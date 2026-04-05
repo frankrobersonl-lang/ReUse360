@@ -71,13 +71,13 @@ export async function validateIrrigation(params: {
 
   // Priority 1: ParcelZoneAssignment + WateringZone
   const assignment = await db.parcelZoneAssignment.findFirst({
-    where: { parcelId },
+    where: { parcelId, orgId: 'org-pcu' },
     orderBy: { effectiveDate: 'desc' },
   });
 
   if (assignment?.zoneId) {
     const zone = await db.wateringZone.findUnique({
-      where: { zoneCode: assignment.zoneId },
+      where: { zoneCode_orgId: { zoneCode: assignment.zoneId, orgId: 'org-pcu' } },
     });
 
     if (zone && zone.allowedDays.length > 0) {
@@ -91,7 +91,7 @@ export async function validateIrrigation(params: {
   // Priority 2: Parcel record
   if (!allowedDays) {
     const parcel = await db.parcel.findUnique({
-      where: { parcelId },
+      where: { parcelId_orgId: { parcelId, orgId: 'org-pcu' } },
       select: { wateringZone: true, irrigationDay: true },
     });
 

@@ -135,14 +135,16 @@ async function upsertRows(rows: ZoneRow[]): Promise<ImportResult> {
     try {
       await db.parcelZoneAssignment.upsert({
         where: {
-          parcelId_zoneId: {
+          parcelId_zoneId_orgId: {
             parcelId: row.parcelId,
             zoneId:   row.zoneId,
+            orgId:    'org-pcu',
           },
         },
         create: {
           parcelId:      row.parcelId,
           zoneId:        row.zoneId,
+          orgId:         'org-pcu',
           dayOfWeek:     row.dayOfWeek,
           oddEven:       row.oddEven,
           effectiveDate: row.effectiveDate,
@@ -160,7 +162,7 @@ async function upsertRows(rows: ZoneRow[]): Promise<ImportResult> {
 
       // Also sync the Parcel record's wateringZone and irrigationDay
       await db.parcel.updateMany({
-        where: { parcelId: row.parcelId },
+        where: { parcelId: row.parcelId, orgId: 'org-pcu' },
         data: {
           wateringZone:  row.zoneId,
           irrigationDay: row.oddEven ?? row.dayOfWeek ?? undefined,

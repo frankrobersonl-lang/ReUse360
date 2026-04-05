@@ -93,6 +93,7 @@ export async function POST(req: NextRequest) {
   const violation = await db.violation.create({
     data: {
       caseNumber,
+      orgId: 'org-pcu',
       parcelId,
       accountId,
       meterId,

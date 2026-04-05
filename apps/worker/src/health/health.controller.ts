@@ -6,7 +6,7 @@ export class HealthController {
   constructor(private readonly prisma: PrismaService) {}
 
   @Get()
-  async check() {
+  async check(): Promise<Record<string, string>> {
     const checks: Record<string, string> = { status: 'ok' };
 
     try {

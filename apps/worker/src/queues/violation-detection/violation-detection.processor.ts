@@ -12,6 +12,7 @@ export interface ViolationDetectionJobData {
   sinceDate?: string;
   /** How many hours back to fetch reads (default: 24) */
   fetchSinceHours?: number;
+  orgId?: string;
 }
 
 @Processor(QUEUE_NAMES.VIOLATION_DETECTION)

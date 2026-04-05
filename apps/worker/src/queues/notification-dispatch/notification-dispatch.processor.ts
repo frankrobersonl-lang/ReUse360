@@ -7,6 +7,7 @@ import { NotificationDispatchService } from './notification-dispatch.service';
 
 export interface NotificationJobData {
   alertId: string;
+  orgId?: string;
 }
 
 @Processor(QUEUE_NAMES.NOTIFICATION_DISPATCH)

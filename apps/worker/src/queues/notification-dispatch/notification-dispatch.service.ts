@@ -12,6 +12,7 @@ export class NotificationDispatchService {
     return this.prisma.connectorJob.create({
       data: {
         jobType: 'ALERT_DISPATCH',
+        orgId: data.orgId ?? 'org-pcu',
         status:  'QUEUED',
         payload: JSON.stringify(data),
       },

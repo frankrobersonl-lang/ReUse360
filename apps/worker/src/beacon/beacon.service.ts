@@ -28,6 +28,7 @@ export class BeaconService {
     const connectorJob = await this.prisma.connectorJob.create({
       data: {
         jobType: 'BEACON_RANGE_READ',
+        orgId: 'org-pcu',
         status:  'QUEUED',
         payload: JSON.stringify({
           accountIds: request.accountIds.length,

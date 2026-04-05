@@ -10,6 +10,7 @@ export interface SrSyncJobData {
   action: 'create' | 'sync';
   /** Required for 'create', optional for 'sync' (sync specific violation) */
   violationId?: string;
+  orgId?: string;
 }
 
 @Processor(QUEUE_NAMES.SR_SYNC)

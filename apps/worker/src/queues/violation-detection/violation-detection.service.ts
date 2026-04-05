@@ -48,7 +48,7 @@ export class ViolationDetectionService {
     return this.prisma.connectorJob.create({
       data: {
         jobType: 'VIOLATION_DETECTION',
-          orgId: job.data.orgId ?? 'org-pcu',
+          orgId: data.orgId ?? 'org-pcu',
         status:  'QUEUED',
         payload: JSON.stringify(data),
       },
@@ -265,6 +265,7 @@ export class ViolationDetectionService {
         wateringDay:   params.wateringDay ?? null,
         wateringZone:  params.wateringZone ?? null,
         ordinanceRef:  'FAC 40D-22',
+        orgId:         'org-pcu',
         notes:         `Auto-detected by violation-detection worker`,
       },
     });

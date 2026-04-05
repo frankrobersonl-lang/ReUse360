@@ -5,10 +5,9 @@ import Stripe from 'stripe'
 import { auth } from '@clerk/nextjs/server'
 import { db } from '@/lib/db'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
-
 export async function POST(req: NextRequest) {
   try {
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
     const { userId } = await auth()
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 

@@ -4,8 +4,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { db } from '@/lib/db'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
-
 const PLAN_MAP: Record<string, string> = {
   [process.env.STRIPE_PRICE_ESSENTIAL!]:    'ESSENTIAL',
   [process.env.STRIPE_PRICE_PROFESSIONAL!]: 'PROFESSIONAL',
@@ -13,6 +11,7 @@ const PLAN_MAP: Record<string, string> = {
 }
 
 export async function POST(req: NextRequest) {
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
   const body = await req.text()
   const sig  = req.headers.get('stripe-signature')!
 

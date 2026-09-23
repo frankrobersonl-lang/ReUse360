@@ -30,7 +30,8 @@ interface NavItem {
 }
 
 const NAV: NavItem[] = [
-  { label: 'Accounts', href: '/accounts', icon: 'Building2', roles: ['ADMIN', 'ANALYST', 'ENFORCEMENT'] },
+  { label: 'Conservation Workspace', href: '/demo', icon: 'LayoutDashboard', roles: ['ADMIN', 'ANALYST', 'ENFORCEMENT'] },
+  { label: 'Assist', href: '/accounts', icon: 'Building2', roles: ['ADMIN', 'ANALYST', 'ENFORCEMENT'] },
   {
     label: 'Administration', href: '/admin', icon: 'Settings2', roles: ['ADMIN'],
     children: [
@@ -43,18 +44,19 @@ const NAV: NavItem[] = [
     ],
   },
   {
-    label: 'Analytics', href: '/analyst/dashboard', icon: 'BarChart3', roles: ['ADMIN', 'ANALYST'],
+    label: 'Monitor & Measure', href: '/analyst/dashboard', icon: 'BarChart3', roles: ['ADMIN', 'ANALYST'],
     children: [
       { label: 'Dashboard',        href: '/analyst/dashboard',            icon: 'LayoutDashboard', roles: ['ADMIN', 'ANALYST'] },
       { label: 'Usage by Zone',    href: '/analyst/analytics/usage',      icon: 'Droplets',        roles: ['ADMIN', 'ANALYST'] },
       { label: 'Violation Trends', href: '/analyst/analytics/violations', icon: 'TrendingUp',      roles: ['ADMIN', 'ANALYST'] },
       { label: 'Reclaimed Water',  href: '/analyst/analytics/reclaimed',  icon: 'Recycle',         roles: ['ADMIN', 'ANALYST'] },
+      { label: 'Programs',         href: '/analyst/analytics/incentives', icon: 'FileCheck',       roles: ['ADMIN', 'ANALYST'] },
       { label: 'Meters',           href: '/analyst/meters',               icon: 'Gauge',           roles: ['ADMIN', 'ANALYST'] },
       { label: 'Reports',          href: '/analyst/reports',              icon: 'FileText',        roles: ['ADMIN', 'ANALYST'] },
     ],
   },
   {
-    label: 'Enforcement', href: '/enforcement/dashboard', icon: 'ShieldAlert', roles: ['ADMIN', 'ANALYST', 'ENFORCEMENT'],
+    label: 'Comply & Enforce', href: '/enforcement/dashboard', icon: 'ShieldAlert', roles: ['ADMIN', 'ANALYST', 'ENFORCEMENT'],
     children: [
       { label: 'Dashboard',   href: '/enforcement/dashboard',   icon: 'LayoutDashboard', roles: ['ADMIN', 'ANALYST', 'ENFORCEMENT'] },
       { label: 'Violations',  href: '/enforcement/violations',  icon: 'AlertTriangle',   roles: ['ADMIN', 'ANALYST', 'ENFORCEMENT'] },

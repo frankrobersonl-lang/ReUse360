@@ -1,5 +1,5 @@
 export const dynamic = 'force-dynamic';
-import type { Metadata }  from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter }          from 'next/font/google';
 import { ClerkProvider }  from '@clerk/nextjs';
 import { Toaster }        from 'sonner';
@@ -9,9 +9,14 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
-  title:       'ReUse360 Plus — Water Conservation Platform',
-  description: 'AMI-driven irrigation enforcement and reclaimed water management for Pinellas County Utilities',
+  title:       'ReUse360 Plus | AMI-Powered Water Conservation Operations',
+  description: 'Turn water-use data into conservation action across monitoring, customer engagement, programs, assistance, and optional compliance.',
   icons: { icon: '/favicon.svg' },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -27,4 +32,3 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </ClerkProvider>
   );
 }
-

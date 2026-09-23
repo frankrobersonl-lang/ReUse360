@@ -70,33 +70,33 @@ function useCountUp(end: number, duration = 1500, decimals = 0) {
 const features = [
   {
     icon: '💧',
-    title: 'AMI Violation Detection',
-    desc: 'Automatic watering schedule enforcement using Beacon AMA smart meter data with 15-minute granularity.',
+    title: 'Monitor',
+    desc: 'Unify multi-vendor AMI data to surface leaks, continuous flow, outdoor-use patterns, unusual demand, and emerging trends.',
   },
   {
-    icon: '📊',
-    title: 'Real-Time Analytics',
-    desc: 'Live dashboards tracking water usage, violations, and conservation metrics across all zones.',
+    icon: '💬',
+    title: 'Engage',
+    desc: 'Send relevant alerts, summaries, watering guidance, and multilingual campaigns—then measure response and savings.',
   },
   {
-    icon: '🗺️',
-    title: 'GIS-Powered Mapping',
-    desc: 'Interactive maps showing parcels, meters, violations, and inspection routes with PostGIS integration.',
+    icon: '🤝',
+    title: 'Assist',
+    desc: 'Give customer-service teams a complete use history, probable high-bill causes, program eligibility, and the next best action.',
   },
   {
-    icon: '🔗',
-    title: 'Cityworks Integration',
-    desc: 'Seamless service request creation and tracking through direct Cityworks REST API connectivity.',
+    icon: '🌱',
+    title: 'Programs',
+    desc: 'Coordinate rebates, audits, site visits, and conservation kits while tracking participation, equity, cost, and gallons saved.',
   },
   {
     icon: '🛡️',
-    title: 'Enforcement Workflow',
-    desc: 'End-to-end case management from violation detection through inspection scheduling and resolution tracking.',
+    title: 'Comply & Enforce',
+    desc: 'When policy calls for it, validate schedules, preserve evidence, manage notices and appeals, and maintain a complete audit trail.',
   },
   {
-    icon: '📋',
-    title: 'Permits & Complaints',
-    desc: 'Streamlined irrigation permit approvals and citizen complaint intake with automated routing and status updates.',
+    icon: '📈',
+    title: 'Measure',
+    desc: 'Report savings, reach, leak-resolution time, peak-demand reduction, program conversion, compliance, and staff time recovered.',
   },
 ];
 
@@ -127,10 +127,10 @@ export default function LandingPage() {
   const compliance = useCountUp(91.2, 1600, 1);
 
   return (
-    <div className={`${serif.variable} ${sans.variable} font-sans`}>
+    <div className={`${serif.variable} ${sans.variable} overflow-x-hidden font-sans`}>
       {/* ─── HERO ─────────────────────────────────────── */}
       <section
-        className="hero-bg relative flex min-h-screen flex-col overflow-hidden"
+        className="hero-bg relative flex min-h-[88svh] flex-col overflow-hidden"
         style={{ background: '#0D1B2A' }}
       >
         <div className="hero-glow" aria-hidden="true" suppressHydrationWarning />
@@ -145,7 +145,7 @@ export default function LandingPage() {
         </div>
 
         {/* Nav */}
-        <nav className="relative z-10 flex items-center justify-between px-6 py-5 sm:px-10">
+        <nav className="relative z-10 flex w-full items-center justify-between px-6 py-5 sm:px-10">
           <span
             className="text-xl font-bold tracking-tight"
             style={{ fontFamily: 'var(--font-display)', color: '#5CC8DB' }}
@@ -162,37 +162,38 @@ export default function LandingPage() {
         </nav>
 
         {/* Hero content */}
-        <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-6 text-center">
+        <div className="relative z-10 flex w-full flex-1 flex-col items-center justify-center px-5 py-14 text-center sm:px-6 sm:py-16">
           <h1
-            className="max-w-3xl text-4xl leading-tight sm:text-6xl sm:leading-tight"
+            className="w-full max-w-[19rem] text-[2rem] leading-[1.08] sm:max-w-3xl sm:text-6xl sm:leading-tight"
             style={{ fontFamily: 'var(--font-display)', color: '#FFFFFF' }}
           >
-            Water Conservation,{' '}
-            <span style={{ color: '#006E8C' }}>Reimagined.</span>
+            Turn AMI data into{' '}
+            <span className="block" style={{ color: '#5CC8DB' }}>conservation action.</span>
           </h1>
-          <p className="mt-5 max-w-xl text-lg leading-relaxed text-white/70">
-            AMI-driven irrigation enforcement and reclaimed water conservation
-            for Pinellas County Utilities — powered by smart meter intelligence.
+          <p className="mt-5 w-full max-w-[19rem] text-sm leading-6 text-white/70 sm:max-w-xl sm:text-lg sm:leading-relaxed">
+            ReUse360 Plus helps utilities monitor water use, engage customers,
+            manage conservation programs, assist staff, and automate compliance
+            when their operating model calls for it.
           </p>
-          <div className="mt-8 flex gap-4">
+          <div className="mt-8 flex w-full max-w-[19rem] flex-wrap justify-center gap-3 sm:max-w-sm sm:gap-4">
             <Link
-              href="/sign-in"
+              href="/demo"
               className="rounded-full px-7 py-3 text-sm font-semibold transition hover:opacity-90"
               style={{ background: '#006E8C', color: '#fff' }}
             >
-              Get Started
+              Explore the synthetic demo
             </Link>
-            <a
-              href="#features"
+            <Link
+              href="/sign-in"
               className="rounded-full border border-white/20 px-7 py-3 text-sm font-semibold text-white/80 transition hover:border-white/40"
             >
-              Learn More
-            </a>
+              Sign in
+            </Link>
           </div>
         </div>
 
         {/* Scroll indicator */}
-        <div className="relative z-10 flex justify-center pb-8">
+        <div className="relative z-10 flex justify-center pb-5">
           <div className="h-10 w-6 rounded-full border-2 border-white/30 p-1">
             <div className="scroll-dot mx-auto h-2 w-1.5 rounded-full bg-white/60" />
           </div>
@@ -203,14 +204,14 @@ export default function LandingPage() {
       <section id="features" className="bg-gray-50 px-6 py-20 sm:px-10 sm:py-28">
         <div className="mx-auto max-w-6xl">
           <h2
-            className="text-center text-3xl sm:text-4xl"
+            className="mx-auto max-w-[18rem] text-center text-2xl leading-tight sm:max-w-none sm:text-4xl"
             style={{ fontFamily: 'var(--font-display)', color: '#0D1B2A' }}
           >
-            Intelligent Enforcement Platform
+            A complete conservation operating system
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-center text-gray-500">
-            Six integrated modules working together to detect violations,
-            manage inspections, and conserve millions of gallons annually.
+            Start with the outcome your utility needs today. Add modules as your
+            program, policy, and customer-service model evolve.
           </p>
           <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {features.map((f) => (
@@ -235,6 +236,38 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ─── PHASE III SPOTLIGHT ─────────────────────── */}
+      <section className="px-6 py-20 sm:px-10 sm:py-28" style={{ background: '#FFFFFF' }}>
+        <div className="mx-auto max-w-5xl">
+          <p className="text-center text-xs font-bold uppercase tracking-widest" style={{ color: '#006E8C' }}>
+            Choose your utility&apos;s goal
+          </p>
+          <h2
+            className="mt-3 text-center text-3xl sm:text-4xl"
+            style={{ fontFamily: 'var(--font-display)', color: '#0D1B2A' }}
+          >
+            The same data can support different action.
+          </h2>
+          <p className="mx-auto mt-4 max-w-2xl text-center text-gray-500">
+            Inform, assist, incentivize, investigate, or enforce. ReUse360 Plus
+            adapts to the way your utility serves its community.
+          </p>
+          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              { t: 'Monitor water use', d: 'Find leaks, continuous flow, high use, irrigation patterns, and emerging demand across the service area.' },
+              { t: 'Engage customers', d: 'Create targeted outreach, personalized summaries, alerts, and practical next steps.' },
+              { t: 'Manage programs', d: 'Match customers to rebates and audits, coordinate follow-up, and verify savings.' },
+              { t: 'Automate compliance', d: 'Validate rules and manage evidence, warnings, penalties, and appeals as an optional workflow.' },
+            ].map((p) => (
+              <div key={p.t} className="rounded-2xl border border-gray-100 bg-gray-50 p-5">
+                <h3 className="text-sm font-semibold" style={{ color: '#0D1B2A' }}>{p.t}</h3>
+                <p className="mt-2 text-xs leading-relaxed text-gray-500">{p.d}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ─── ROI / STATS ─────────────────────────────── */}
       <section
         className="px-6 py-20 sm:px-10 sm:py-28"
@@ -245,17 +278,18 @@ export default function LandingPage() {
             className="text-3xl sm:text-4xl"
             style={{ fontFamily: 'var(--font-display)', color: '#FFFFFF' }}
           >
-            Proven Results
+            Projected Program Impact
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-white/60">
-            Real impact across Pinellas County&apos;s water conservation program.
+            A synthetic preview of the outcomes utility teams can manage in one
+            place. Every deployment establishes its own baselines and targets.
           </p>
           <div className="mt-14 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { ref: staffHours.ref, val: `${staffHours.value}`, label: 'Staff Hours Recovered Annually' },
-              { ref: costAvoidance.ref, val: `$${costAvoidance.value}K`, label: 'Estimated Cost Avoidance/Year' },
-              { ref: reviewReduction.ref, val: `${reviewReduction.value}%`, label: 'Manual Review Time Reduced' },
-              { ref: compliance.ref, val: `${compliance.value}%`, label: 'Compliance Rate' },
+              { ref: staffHours.ref, val: `${staffHours.value}`, label: 'Modeled Staff Hours Recovered / Year' },
+              { ref: costAvoidance.ref, val: `$${costAvoidance.value}K`, label: 'Modeled Program Value / Year' },
+              { ref: reviewReduction.ref, val: `${reviewReduction.value}%`, label: 'Modeled Reduction in Manual Review' },
+              { ref: compliance.ref, val: `${compliance.value}%`, label: 'Synthetic Customer Response Rate' },
             ].map((s) => (
               <div key={s.label} ref={s.ref}>
                 <div
@@ -269,6 +303,11 @@ export default function LandingPage() {
               </div>
             ))}
           </div>
+          <p className="mx-auto mt-10 max-w-2xl text-xs leading-relaxed text-white/40">
+            Demonstration figures are synthetic planning estimates, not customer
+            results or guarantees. Actual outcomes vary with service-area size,
+            AMI coverage, program design, staffing, climate, and customer response.
+          </p>
         </div>
       </section>
 
@@ -278,18 +317,29 @@ export default function LandingPage() {
           className="text-3xl sm:text-4xl"
           style={{ fontFamily: 'var(--font-display)', color: '#0D1B2A' }}
         >
-          Ready to Transform Water Conservation?
+          Bring ReUse360+ to Your Utility
         </h2>
         <p className="mx-auto mt-4 max-w-lg text-gray-500">
-          Join Pinellas County Utilities in leading smart, data-driven irrigation enforcement.
+          Start with your AMI data and the outcome that matters most—leak response,
+          customer engagement, program participation, demand reduction, or
+          configurable compliance.
         </p>
-        <Link
-          href="/sign-in"
-          className="mt-8 inline-block rounded-full px-8 py-3.5 text-sm font-semibold transition hover:opacity-90"
-          style={{ background: '#0D1B2A', color: '#fff' }}
-        >
-          Sign In to Your Dashboard
-        </Link>
+        <div className="mt-8 flex flex-wrap justify-center gap-3 sm:gap-4">
+          <Link
+            href="/demo"
+            className="inline-block rounded-full px-8 py-3.5 text-sm font-semibold transition hover:opacity-90"
+            style={{ background: '#0D1B2A', color: '#fff' }}
+          >
+            Explore the Demo
+          </Link>
+          <a
+            href="mailto:frankrobersonl@gmail.com?subject=ReUse360%2B%20Pilot%20Inquiry"
+            className="inline-block rounded-full px-8 py-3.5 text-sm font-semibold transition hover:opacity-90"
+            style={{ background: '#006E8C', color: '#fff' }}
+          >
+            Request a Pilot
+          </a>
+        </div>
       </section>
 
       {/* ─── Footer ───────────────────────────────────── */}
@@ -298,7 +348,7 @@ export default function LandingPage() {
         style={{ background: '#0D1B2A' }}
         suppressHydrationWarning
       >
-        &copy; {new Date().getFullYear()} ReUse360+ &middot; Pinellas County Utilities
+        &copy; {new Date().getFullYear()} ReUse360Plus LLC &middot; Tampa Bay, Florida
       </footer>
 
       {/* ─── Styles ───────────────────────────────────── */}
